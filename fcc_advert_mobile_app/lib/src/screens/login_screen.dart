@@ -1,7 +1,7 @@
 import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/login_heading.dart';
 import 'package:flutter/material.dart';
-
+import '../services/login_service.dart';
 class LoginScreen extends StatefulWidget {
   static String routename = "/login";
   const LoginScreen({super.key});
@@ -13,6 +13,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+
+  final loginService = LoginService();
 
   @override
   void dispose(){
@@ -50,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     children: [
                       Expanded(
-                          flex: 2,
+                          flex: 1,
                           child: Container(
                             width: double.infinity,
                             child: Text(
@@ -141,9 +143,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       customButton(
-                                          onPressed: (){
+                                          onPressed: ()async{
                                             print(_emailController.text);
                                             print(_passwordController.text);
+                                            await loginService.login(
+                                                _emailController.text,
+                                                _passwordController.text
+                                            );
+                                            print("ok");
                                           },
                                           text: "Submit"
                                       ),
