@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: OTPScreen.routename,
+      initialRoute: LoginScreen.routename,
       routes: {
         LoginScreen.routename: (context)=>LoginScreen(),
         AdvertisementListPage.routename : (context)=>AdvertisementListPage(),

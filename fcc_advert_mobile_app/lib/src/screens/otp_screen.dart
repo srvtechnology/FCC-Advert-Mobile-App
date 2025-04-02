@@ -1,6 +1,8 @@
+import 'package:fcc_advert_mobile_app/src/client.dart';
 import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/login_heading.dart';
 import 'package:fcc_advert_mobile_app/src/components/otp_text_field.dart';
+import 'package:fcc_advert_mobile_app/src/services/login_service.dart';
 import 'package:flutter/material.dart';
 
 class OTPScreen extends StatefulWidget {
@@ -10,9 +12,11 @@ class OTPScreen extends StatefulWidget {
 }
 
 class _OTPScreenState extends State<OTPScreen> {
-  final List<TextEditingController> _controllers = List.generate(5, (index) => TextEditingController());
-  final List<FocusNode> _focusNodes = List.generate(5, (index) => FocusNode());
+  bool _isLoading = false;
 
+  final List<TextEditingController> _controllers = List.generate(6, (index) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
+  final loginService = LoginService();
   @override
   void dispose(){
     for (var controller in _controllers){
@@ -31,7 +35,7 @@ class _OTPScreenState extends State<OTPScreen> {
         child: Container(
           width: double.infinity,
           margin: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(10),
           child: GestureDetector(
             onTap: (){
               FocusScope.of(context).unfocus();
@@ -113,24 +117,34 @@ class _OTPScreenState extends State<OTPScreen> {
                                   //     ),
                                   //   ),
                                   // ),
-                                  children: List.generate(5, (index) {
+                                  children: List.generate(6, (index) {
                                     return OTPTextField(
                                       controller: _controllers[index],
                                       focusNode: _focusNodes[index],
                                       onChanged: (value) {
-                                        if (value.length == 1 && index < 4) {
+                                        if (value.length == 1 && index < 5) {
                                           FocusScope.of(context).requestFocus(_focusNodes[index + 1]);
                                         }
                                       },
                                       onBackspace: () {
+                                        debugPrint("Backspace pressed at index $index. Current text: ${_controllers[index].text}");
+
+
                                         if (index > 0) {
-                                          _controllers[index - 1].selection = TextSelection.fromPosition(
-                                              TextPosition(offset: _controllers[index - 1].text.length)
-                                          );
+                                          _controllers[index].clear();
+                                          debugPrint("Moving focus to previous field (index ${index - 1})");
                                           FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
+
+                                          final previousText = _controllers[index - 1].text;
+                                          debugPrint("Previous field text: $previousText");
+                                          if (previousText.isNotEmpty) {
+                                            _controllers[index - 1].selection = TextSelection.fromPosition(
+                                              TextPosition(offset: previousText.length),
+                                            );
+                                          }
                                         }
                                       },
-                                      nextFocusNode: index < 4 ? _focusNodes[index + 1] : null,
+                                      nextFocusNode: index < 5 ? _focusNodes[index + 1] : null,
                                     );
                                   }),
                                 ),
@@ -143,7 +157,75 @@ class _OTPScreenState extends State<OTPScreen> {
                                 alignment: Alignment.topLeft,
                                 child: Column(
                                   children: [
-                                    customButton(onPressed: (){}, text: "Submit"),
+                                    customButton(
+                                        onPressed: ()async{
+                                          setState(() {
+                                            _isLoading=true;
+                                          });
+                                          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+                                          final email = args!["email"] as String;
+                                          var otp = "";
+                                          for(var i in _controllers){
+                                            if(i.text.isEmpty){
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text("Fields cannot be empty"),
+                                                  backgroundColor: Colors.red,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                              break;
+                                            }
+                                            else{
+                                              otp += i.text;
+                                            }
+                                          }
+                                          if(otp.length == 6){
+                                            var response = await loginService.verifyOtp(otp, email);
+
+                                            apiClient.setToken(response["data"]["token"]);
+
+                                            if (response["status"] == 200 || response["status"] == 201) {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text("Login Successful!"),
+                                                  backgroundColor: Colors.green,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                              // Navigator.pushNamed(
+                                              //     context,
+                                              //     OTPScreen.routename,
+                                              //     arguments: {
+                                              //       'email': _emailController.text
+                                              //     }
+                                              // );
+                                            }
+                                            else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text("Login Failed: ${response["message"]}"),
+                                                  backgroundColor: Colors.red,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                            setState(() {
+                                              _isLoading=false;
+                                            });
+                                          }
+                                        },
+                                        text: "Submit",
+                                      child: _isLoading?SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      ):null
+
+                                    ),
                                     SizedBox(height: 16.0),
                                     // Back Link
                                     Container(

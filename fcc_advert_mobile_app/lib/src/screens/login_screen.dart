@@ -1,5 +1,6 @@
 import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/login_heading.dart';
+import 'package:fcc_advert_mobile_app/src/screens/otp_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/login_service.dart';
 class LoginScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  bool _isLoading = false;
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
@@ -144,15 +146,64 @@ class _LoginScreenState extends State<LoginScreen> {
                                     children: [
                                       customButton(
                                           onPressed: ()async{
-                                            print(_emailController.text);
-                                            print(_passwordController.text);
-                                            await loginService.login(
-                                                _emailController.text,
-                                                _passwordController.text
-                                            );
-                                            print("ok");
+                                            setState(() {
+                                              _isLoading=true;
+                                            });
+                                            if(_emailController.text.isEmpty || _passwordController.text.isEmpty){
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text("Fields cannot be empty"),
+                                                  backgroundColor: Colors.red,
+                                                  duration: Duration(seconds: 2),
+                                                ),
+                                              );
+                                            }
+                                            else{
+                                              var response = await loginService.login(
+                                                  _emailController.text,
+                                                  _passwordController.text
+                                              );
+                                              if (response["status"] == 200 || response["status"] == 201) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text("Login Successful!"),
+                                                    backgroundColor: Colors.green,
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                                Navigator.pushNamed(
+                                                    context,
+                                                    OTPScreen.routename,
+                                                  arguments: {
+                                                    'email': _emailController.text
+                                                  }
+                                                );
+                                              }
+                                              else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text("Login Failed: ${response["message"]}"),
+                                                    backgroundColor: Colors.red,
+                                                    duration: Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                            setState(() {
+                                              _isLoading=false;
+                                            });
                                           },
-                                          text: "Submit"
+                                          text: "Submit",
+                                          child: _isLoading
+                                              ? SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                              : null,
                                       ),
                                       Container(
                                         width: double.infinity,
