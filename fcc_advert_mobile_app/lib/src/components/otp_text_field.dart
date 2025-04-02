@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 class OTPTextField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
@@ -34,8 +36,8 @@ class _OTPTextFieldState extends State<OTPTextField> {
   }
 
   void _handleControllerChange() {
-    // If text was deleted (previous had text, now empty)
     if (_previousValue.isNotEmpty && widget.controller.text.isEmpty) {
+      // Text was deleted (likely backspace)
       widget.onBackspace?.call();
     }
     _previousValue = widget.controller.text;
@@ -44,27 +46,35 @@ class _OTPTextFieldState extends State<OTPTextField> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 55.0,
-      height: 45.0,
+      width: 50.0,
+      height: 40.0,
       decoration: BoxDecoration(
         border: Border.all(color: Color(0xFFF1A2F9), width: 2.0),
         borderRadius: BorderRadius.circular(8.0),
       ),
-      child: TextField(
-        controller: widget.controller,
-        focusNode: widget.focusNode,
-        onChanged: widget.onChanged,
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 8.0),
-          counter: Offstage(),
-          border: InputBorder.none,
+      child: KeyboardListener(
+        focusNode: FocusNode(),
+        onKeyEvent: (KeyEvent event) {
+          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+            widget.onBackspace?.call();
+          }
+        },
+        child: TextField(
+          controller: widget.controller,
+          focusNode: widget.focusNode,
+          onChanged: widget.onChanged,
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
+          maxLength: 1,
+          decoration: InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+            counter: Offstage(),
+            border: InputBorder.none,
+          ),
+          textAlignVertical: TextAlignVertical.center,
+          style: TextStyle(fontSize: 14.0),
         ),
-        textAlignVertical: TextAlignVertical.center,
-        style: TextStyle(fontSize: 20.0),
       ),
     );
   }
