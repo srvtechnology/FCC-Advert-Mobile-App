@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 Widget customButton({
   required VoidCallback onPressed,
   required String text,
+  Widget? child,
   Color backgroundColor = const Color(0xFFF1A2F9), // Default light pink color
   Color textColor = const Color(0xFF494949), // Default text color
   double fontSize = 20, // Default font size
@@ -32,7 +33,7 @@ Widget customButton({
           borderRadius: borderRadius,
         ),
       ),
-      child: Text(
+      child: child ?? Text(
         text,
         style: TextStyle(
           fontSize: fontSize,
