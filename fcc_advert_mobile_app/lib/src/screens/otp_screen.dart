@@ -2,6 +2,7 @@ import 'package:fcc_advert_mobile_app/src/client.dart';
 import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/login_heading.dart';
 import 'package:fcc_advert_mobile_app/src/components/otp_text_field.dart';
+import 'package:fcc_advert_mobile_app/src/screens/main.dart';
 import 'package:fcc_advert_mobile_app/src/services/login_service.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,7 @@ class _OTPScreenState extends State<OTPScreen> {
   final List<TextEditingController> _controllers = List.generate(6, (index) => TextEditingController());
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
   final loginService = LoginService();
+
   @override
   void dispose(){
     for (var controller in _controllers){
@@ -30,6 +32,7 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: Center(
         child: Container(
@@ -182,8 +185,11 @@ class _OTPScreenState extends State<OTPScreen> {
                                           }
                                           if(otp.length == 6){
                                             var response = await loginService.verifyOtp(otp, email);
+                                            print(response);
 
                                             apiClient.setToken(response["data"]["token"]);
+
+                                            apiClient.setProfile(response["data"]);
 
                                             if (response["status"] == 200 || response["status"] == 201) {
                                               ScaffoldMessenger.of(context).showSnackBar(
@@ -213,6 +219,7 @@ class _OTPScreenState extends State<OTPScreen> {
                                             setState(() {
                                               _isLoading=false;
                                             });
+                                            Navigator.pushNamedAndRemoveUntil(context, AdvertisementListPage.routename, (route)=>false);
                                           }
                                         },
                                         text: "Submit",
@@ -230,7 +237,9 @@ class _OTPScreenState extends State<OTPScreen> {
                                     // Back Link
                                     Container(
                                       child: TextButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
                                         child: Text(
                                           'Click to go back.',
                                           style: TextStyle(
