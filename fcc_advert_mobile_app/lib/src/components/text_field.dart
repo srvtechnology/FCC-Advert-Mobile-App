@@ -113,24 +113,49 @@ class _CustomTextFieldState extends State<CustomTextField> {
         );
 
       case 'dropdown':
-        return PopupMenuButton<OptionItem>(
-          color: AppColors.primaryBackground,
+        return IconButton(
           icon: Icon(widget.suffixIconInside, color: AppColors.iconColor),
-          onSelected: (value) {
-            setState(() {
-              _controller.text = value.name;
-            });
-            widget.onSuffixIconTap!(value);
-          },
-          itemBuilder: (BuildContext context) {
-            return widget.dropdownData!
-                .map((e) => PopupMenuItem<OptionItem>(
-              value: e,
-              child: Text(e.name),
-            ))
-                .toList();
+          onPressed: () async {
+            final selected = await showModalBottomSheet<OptionItem>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: AppColors.primaryBackground, // custom background
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) {
+                return SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: widget.dropdownData!
+                          .map((e) => ListTile(
+                        title: Text(
+                          e.name,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context, e); // return the selected item
+                        },
+                      ))
+                          .toList(),
+                    ),
+                  ),
+                );
+              },
+            );
+
+            if (selected != null) {
+              setState(() {
+                _controller.text = selected.name;
+              });
+              widget.onSuffixIconTap?.call(selected);
+            }
           },
         );
+
+
 
       case 'iconbutton':
       default:
