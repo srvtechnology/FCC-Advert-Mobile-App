@@ -1,3 +1,4 @@
+import 'package:fcc_advert_mobile_app/src/screens/camera_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -32,21 +33,66 @@ class _AdvertisementBoardImagesState extends State<AdvertisementBoardImages> {
   int state = 0;
 
   void _updateParent() {
-    if (frontImage != null && backImage != null && wholeImage != null) {
-      widget.onImagesChanged(BoardImages(
-        front: frontImage,
-        back: backImage,
-        whole: wholeImage,
-      ));
+    widget.onImagesChanged(BoardImages(
+      front: frontImage,
+      back: backImage,
+      whole: wholeImage,
+    ));
+  }
+
+  Future<void> _pickImage(Function(XFile?) setter, {bool useCamera = false}) async {
+    if (useCamera) {
+      final XFile? image = await Navigator.push<XFile?>(
+        context,
+        MaterialPageRoute(builder: (context) => Camera(onChange: (val) {})),
+      );
+      if (image != null) {
+        setState(() {
+          setter(image);
+          _updateParent();
+        });
+      }
+    } else {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        setState(() {
+          setter(image);
+          _updateParent();
+        });
+      }
     }
   }
 
-  Future<void> _pickImage(Function(XFile?) setter) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      setter(image);
-      _updateParent();
-    });
+
+  void _showImageSourceSelector(Function(XFile?) setter) {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a picture'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(setter, useCamera: true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo),
+                title: const Text('Choose from gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(setter, useCamera: false);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _uploadButton({
@@ -96,17 +142,17 @@ class _AdvertisementBoardImagesState extends State<AdvertisementBoardImages> {
             _uploadButton(
               label: "Front view",
               image: frontImage,
-              onTap: () => _pickImage((img) => frontImage = img),
+              onTap: () => _showImageSourceSelector((img) => frontImage = img),
             ),
             _uploadButton(
               label: "Back view",
               image: backImage,
-              onTap: () => _pickImage((img) => backImage = img),
+              onTap: () => _showImageSourceSelector((img) => backImage = img),
             ),
             _uploadButton(
               label: "Whole view",
               image: wholeImage,
-              onTap: () => _pickImage((img) => wholeImage = img),
+              onTap: () => _showImageSourceSelector((img) => wholeImage = img),
             ),
           ],
         ),

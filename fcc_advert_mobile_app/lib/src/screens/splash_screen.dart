@@ -29,9 +29,9 @@ class _SplashScreenState extends State<SplashScreen> {
     });
     apiClient.isToken().then((value)=>{
       if (value){
-        Navigator.pushNamed(context, AdvertisementListPage.routename)
+        Navigator.pushNamedAndRemoveUntil(context, AdvertisementListPage.routename,(route)=>false)
       }else{
-        Navigator.pushNamed(context, LoginScreen.routename)
+        Navigator.pushNamedAndRemoveUntil(context, LoginScreen.routename, (route)=>false)
     }
     });
 

@@ -1,10 +1,10 @@
 import 'package:fcc_advert_mobile_app/src/constants/form.dart';
 import 'package:fcc_advert_mobile_app/src/types/form.dart';
+import 'package:fcc_advert_mobile_app/src/utils/time.dart';
 import 'package:flutter/material.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-
 
 class CustomTextField extends StatefulWidget {
   final String? label;
@@ -100,10 +100,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onPressed: () async{
             if (widget.onSuffixIconTap != null) {
               final value = await _selectDate(context);
-              setState(() {
-                _controller.text = value.toString();
-              });
-              widget.onSuffixIconTap!(_controller.text);
+              if (value != null) {
+                final formattedDate = TimeUtils.getTime(value);
+                setState(() {
+                  _controller.text = formattedDate;
+                });
+                widget.onSuffixIconTap!(value.toString());
+              }
+
             }
           },
         );
@@ -133,6 +137,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         return IconButton(
           icon: Icon(widget.suffixIconInside, color: AppColors.iconColor),
           onPressed: () {
+
             if (widget.onSuffixIconTap != null) {
               widget.onSuffixIconTap!(_controller.text);
             }
@@ -174,6 +179,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           children: [
             Expanded(
               child: TextField(
+                readOnly: widget.buttonType=="dropdown"?true:false,
                 keyboardType: _getKeyboardType(),
                 inputFormatters: widget.type == TextFieldTypeEnum.number
                     ? [FilteringTextInputFormatter.digitsOnly]
@@ -181,7 +187,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 controller: _controller,
                 onChanged: (value) {
                   if ((widget.buttonType == null || widget.suffixIconInside == null) && widget.onTextChanged != null) {
-                    widget.onTextChanged!(value);
+                    if (widget.type == TextFieldTypeEnum.email) {
+                      widget.onTextChanged!(value);
+                      // Optionally call a callback or show error message
+                    }
+
                   }
                 },
                 decoration: InputDecoration(

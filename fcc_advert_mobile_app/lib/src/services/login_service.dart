@@ -30,6 +30,10 @@ class LoginService{
         print("Dio error: ${err.message}");
         print("Dio response: ${err.response?.data}");
         print("Status code: ${err.response?.statusCode}");
+        return{
+          "status": 401,
+          "message": err.response?.data["message"]
+        };
       } else {
         print("Other error: $err");
       }

@@ -41,8 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.primaryBackground, // Background color as per the image
       body: Container(
         width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        padding: EdgeInsets.all(20),
+        margin: EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.all(10),
         child: GestureDetector(
           onTap: (){
             FocusScope.of(context).unfocus();
@@ -178,16 +178,41 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     setState(() {
                                                       _isLoading=true;
                                                     });
-                                                    if(_emailController.text.isEmpty || _passwordController.text.isEmpty){
-                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                    if(_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+                                                      ScaffoldMessenger.of(
+                                                          context).showSnackBar(
                                                         SnackBar(
-                                                          content: Text("Fields cannot be empty"),
-                                                          backgroundColor: Colors.red,
-                                                          duration: Duration(seconds: 2),
+                                                          content: Text(
+                                                              "Fields cannot be empty"),
+                                                          backgroundColor: Colors
+                                                              .red,
+                                                          duration: Duration(
+                                                              seconds: 2),
                                                         ),
                                                       );
                                                     }
                                                     else{
+                                                      final isValidEmail = RegExp(
+                                                          r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$"
+                                                      ).hasMatch(_emailController.text);
+
+                                                      if(!isValidEmail){
+                                                        ScaffoldMessenger.of(
+                                                            context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                                "Email is not a valid format"),
+                                                            backgroundColor: Colors
+                                                                .red,
+                                                            duration: Duration(
+                                                                seconds: 2),
+                                                          ),
+                                                        );
+                                                        setState(() {
+                                                          _isLoading=false;
+                                                        });
+                                                        return;
+                                                      }
                                                       var response = await loginService.login(
                                                           _emailController.text,
                                                           _passwordController.text

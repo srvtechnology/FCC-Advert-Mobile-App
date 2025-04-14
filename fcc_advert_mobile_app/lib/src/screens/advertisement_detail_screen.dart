@@ -3,6 +3,7 @@ import 'package:fcc_advert_mobile_app/src/components/app_bar.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 import 'package:fcc_advert_mobile_app/src/constants/form.dart';
 import 'package:fcc_advert_mobile_app/src/screens/main.dart';
+import 'package:fcc_advert_mobile_app/src/utils/time.dart';
 import 'package:flutter/material.dart';
 
 class AdvertisementDetailPage extends StatelessWidget {
@@ -44,15 +45,15 @@ class AdvertisementDetailPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _customText("Space ID: ${ad.id}"),
-        _customText("Space category: ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId)}"),
-        _customText("Data collection date: ${ad.dataCollectionDate}"),
-        _customText("Name of the person collecting data: ${ad.dataCollectionDate}"),
-        _customText("Advertisement agent/company: ${ad.advertiseAgent}"),
-        _customText("Contact person: ${ad.contactPerson}"),
-        _customText("Telephone: ${ad.telephone}"),
-        _customText("Email: ${ad.email}"),
-        _customText("Space created by: ${ad.createdByUser!.name}"),
-        _customText("Space created by user ID: ${ad.createdUserId}"),
+        _customText("Space category: ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}"),
+        _customText("Data collection date: ${TimeUtils.getTime(DateTime.parse(ad.dataCollectionDate!)) ?? "NA"}"),
+        _customText("Name of the person collecting data: ${ad.dataCollectionDate?? "NA"} "),
+        _customText("Advertisement agent/company: ${ad.advertiseAgent?? "NA"}"),
+        _customText("Contact person: ${ad.contactPerson?? "NA"}"),
+        _customText("Telephone: ${ad.telephone?? "NA"}"),
+        _customText("Email: ${ad.email?? "NA"}"),
+        _customText("Space created by: ${ad.createdByUser!.name?? "NA"}"),
+        _customText("Space created by user ID: ${ad.createdUserId?? "NA"}"),
       ],
     ),));
   }
@@ -61,11 +62,11 @@ class AdvertisementDetailPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _customText("Location: ${ad.location}"),
-            _customText("Street/Road No: ${ad.streetRdNo}"),
-            _customText("Section of road: ${ad.sectionOfRd}"),
-            _customText("Landmark: ${ad.landmark}"),
-            _customText("GPS Coordinate: ${ad.gpsCoordinate}"),
+            _customText("Location: ${ad.location ?? "NA"}"),
+            _customText("Street/Road No: ${ad.streetRdNo ?? "NA"}"),
+            _customText("Section of road: ${ad.sectionOfRd ?? "NA"}"),
+            _customText("Landmark: ${ad.landmark ?? "NA"}"),
+            _customText("GPS Coordinate: ${ad.gpsCoordinate ?? "NA"}"),
           ],
         )
     ));
@@ -91,11 +92,11 @@ class AdvertisementDetailPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _customText("Description Property: ${ad.description}"),
-            _customText("Advertisement Category: ${ad.advertisementCategory}"),
-            _customText("Position of Billboard: ${ad.positionOfBillboard}"),
-            _customText("Length: ${ad.length}"),
-            _customText("Width: ${ad.width}"),
+            _customText("Description Property: ${ad.description ?? "NA"}"),
+            _customText("Advertisement Category: ${ad.advertisementCategory ?? "NA"}"),
+            _customText("Position of Billboard: ${ad.positionOfBillboard ?? "NA"}"),
+            _customText("Length: ${ad.length ?? "NA"}"),
+            _customText("Width: ${ad.width ?? "NA"}"),
             _customText("Area: ${(ad.width ?? 0) * (ad.length ?? 0)}"),
           ],
         )
@@ -106,11 +107,11 @@ class AdvertisementDetailPage extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _customText("Landowner Company: ${ad.landownerCompany}"),
-            _customText("Landowner Name: ${ad.landownerName}"),
-            _customText("Landowner Street Address: ${ad.landlordStreetAddress}"),
-            _customText("Landowner Telephone: ${ad.landlordTelephone}"),
-            _customText("Landowner Email: ${ad.landlordEmail}")
+            _customText("Landowner Company: ${ad.landownerCompany ?? "NA"}"),
+            _customText("Landowner Name: ${ad.landownerName ?? "NA"}"),
+            _customText("Landowner Street Address: ${ad.landlordStreetAddress ?? "NA"}"),
+            _customText("Landowner Telephone: ${ad.landlordTelephone ?? "NA"}"),
+            _customText("Landowner Email: ${ad.landlordEmail ?? "NA"}")
           ],
         )
     ));
@@ -131,8 +132,8 @@ class AdvertisementDetailPage extends StatelessWidget {
             child: Image.network(
               imageUrl,
               width: 100,
-              height: 100,
-              fit: BoxFit.cover,
+              height: 150,
+              fit: BoxFit.fitHeight,
               errorBuilder: (context, error, stackTrace) =>
                   Container(width: 100, height: 100, color: Colors.grey),
             ),
@@ -201,10 +202,10 @@ class AdImagePreview extends StatelessWidget {
       children: [
         Container(
           width: 100,
-          height: 50,
+          height: 100 ,
           child: Center(
             child: TimeoutImage(
-                imageUrl: imageUrl ?? "",
+                imageUrl: "https://fccadmin.org/server/storage/${imageUrl}" ?? "",
             ),
           ),
         ),
@@ -299,7 +300,7 @@ class TimeoutImage extends StatelessWidget {
               image: snapshot.data!,
               width: width,
               height: height,
-              fit: BoxFit.cover,
+              fit: BoxFit.fitWidth,
             );
           }
         },

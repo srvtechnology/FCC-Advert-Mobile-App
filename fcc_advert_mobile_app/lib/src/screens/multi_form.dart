@@ -37,6 +37,8 @@ class _MultiFormState extends State<MultiForm> {
   bool _isLoading = true;
   BoardImages? _boardImages;
   final spaceService = SpaceService();
+
+  bool _isSubmit = false;
   @override
   void initState(){
     super.initState();
@@ -147,6 +149,13 @@ class _MultiFormState extends State<MultiForm> {
         value: gps_coordinates,
         trailingIconOutside: Icons.location_on_outlined,
         onTrailingIconTap: (value)async{
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Fetching location...."),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
+            ),
+          );
           var position = await _getLocation();
           setState(() {
             gps_coordinates = "${position["latitude"]} ${position["longitude"]}";
@@ -159,6 +168,7 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage3Fields(BuildContext context){
     return [
       RadioField(
+        key: const ValueKey("desc_property"),
           propertyTypes: [
             "Private Property",
             "Right of way"
@@ -170,13 +180,17 @@ class _MultiFormState extends State<MultiForm> {
 
       ),
       CustomTextField(
-          label: "Advertisement category description",
+        key: const ValueKey("cat_desc"),
+
+        label: "Advertisement category description",
           hintText: "Enter Description",
           onTextChanged: (value){
             requestBody["advertisement_cat_desc"] = value;
           },
       ),
       CustomTextField(
+        key: const ValueKey("ad_type"),
+
         label: "Type of Advertisement",
         hintText: "Select Type of Advertisement",
         suffixIconInside: Icons.arrow_drop_down,
@@ -200,6 +214,7 @@ class _MultiFormState extends State<MultiForm> {
       CustomTextField(
           label: "Advertisement width",
           hintText: "Enter Width",
+        type: TextFieldTypeEnum.number ,
         onTextChanged: (value){
 
             setState(() {
@@ -211,6 +226,7 @@ class _MultiFormState extends State<MultiForm> {
       CustomTextField(
         label: "Advertisement height",
         hintText: "Enter Height",
+        type: TextFieldTypeEnum.number ,
         onTextChanged: (value){
           setState(() {
             height = double.parse(value);
@@ -229,6 +245,7 @@ class _MultiFormState extends State<MultiForm> {
 
           }),
       CustomTextField(
+        key: const ValueKey("no_ad_slides"),
         label: "Number of advertisement slides",
         hintText: "Enter Number",
         dropdownData: FormConstants.advertisementNumbers,
@@ -239,6 +256,7 @@ class _MultiFormState extends State<MultiForm> {
         buttonType: "dropdown",
       ),
       CustomTextField(
+        key: const ValueKey("clearance_height"),
         label: "Clearance Height",
         hintText: "Enter Clearance Height",
         onTextChanged: (value){
@@ -445,11 +463,18 @@ class _MultiFormState extends State<MultiForm> {
     //   final key = step['key']!;
     //   formData[key] = _controllers[key]?.text ?? '';
     // }
-
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Uploading..."),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      ),
+    );
     try{
       var response = await spaceService.createSpace(requestBody);
       if(response["data"]["id"]!=null){
         if(_boardImages==null ) {
+          print("here");
           Navigator.pop(context);
           return;
         }
@@ -467,12 +492,15 @@ class _MultiFormState extends State<MultiForm> {
     }catch(err){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("err: ${err}"),
+          content: Text("Error while uploading, check if fields are empty or not"),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
       );
     }
+    setState(() {
+      _isSubmit=false;
+    });
 
   }
   Map<String, dynamic> formData = {

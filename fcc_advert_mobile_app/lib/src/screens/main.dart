@@ -46,25 +46,44 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
     try {
       final response = await spaceService.get(
         currentPage.toString(),
-        limit.toString(),
+        "",
         ""
       );// Replace with your API endpoint
 
       if (response["status"] == 200) {
+        print("refresh");
         final List<dynamic> data = response["data"];
-        if(currentPage<response["last_page"]){
+        if(data.length==_allAds.length){
+          print("here same length");
+          setState(() {
+            _isLoading = false;
+          });
           return;
         }
-        currentPage+=1;
-        setState(() {
-          _allAds.addAll(data.map((json) {
-            return AdData.fromJson(json);
-          }).toList());
-          _ads.addAll(data.map((json) {
-            return AdData.fromJson(json);
-          }).toList());
-          _isLoading = false;
-        });
+        if(currentPage != response["last_page"]){
+          currentPage+=1;
+          setState(() {
+            _allAds.addAll(data.map((json) {
+              return AdData.fromJson(json);
+            }).toList());
+            _ads.addAll(data.map((json) {
+              return AdData.fromJson(json);
+            }).toList());
+            _isLoading = false;
+          });
+        }else{
+          setState(() {
+            _allAds = data.map((json) {
+              return AdData.fromJson(json);
+            }).toList();
+            _ads = data.map((json) {
+              return AdData.fromJson(json);
+            }).toList();
+            _isLoading = false;
+          });
+        }
+
+
       } else {
         throw Exception('Failed to load ads');
       }
@@ -155,7 +174,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                 ),
                 if (_isLoading)
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 50),
+                    padding: EdgeInsets.symmetric(vertical: 20),
                     child: Center(child: CircularProgressIndicator()),
                   ),
               ],
@@ -174,7 +193,9 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
           ),
           child: IconButton(
               onPressed: (){
-                Navigator.pushNamed(context, MultiForm.routename);
+                Navigator.pushNamed(context, MultiForm.routename).then((_)async{
+                  await fetchAds();
+                });
               },
               icon: Icon(
                   Icons.add,

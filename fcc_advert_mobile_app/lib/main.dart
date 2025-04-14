@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           OTPScreen.routename : (context)=>OTPScreen(),
           MultiForm.routename : (context)=>MultiForm(),
           AdvertisementListPage.routename : (context)=>AdvertisementListPage(),
-          SplashScreen.routename : (context)=>SplashScreen(),
+          SplashScreen.routename : (context)=>SplashScreen()
           // CustomCameraScreen.routename : (context)=>CustomCameraScreen(),
       }
     );
