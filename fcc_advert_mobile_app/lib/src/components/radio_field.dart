@@ -6,11 +6,13 @@ class RadioField extends StatefulWidget {
   final List<String> propertyTypes;
   final String title;
   final void Function(String)? onButtonTap;
+  final String? isSelectedType;
   const RadioField({
     super.key,
     required this.propertyTypes,
     required this.title,
-    this.onButtonTap
+    this.onButtonTap,
+    this.isSelectedType
   });
 
   @override
@@ -18,7 +20,13 @@ class RadioField extends StatefulWidget {
 }
 
 class _RadioFieldState extends State<RadioField> {
-  String selectedType = '';
+  late String selectedType;
+
+  @override
+  void initState(){
+    super.initState();
+    selectedType = widget.isSelectedType?? "";
+  }
 
   @override
   Widget build(BuildContext context) {

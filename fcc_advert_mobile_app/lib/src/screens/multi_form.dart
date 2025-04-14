@@ -14,6 +14,7 @@ import "package:fcc_advert_mobile_app/src/layouts/form_layout.dart";
 import "package:fcc_advert_mobile_app/src/services/geo_service.dart";
 import "package:fcc_advert_mobile_app/src/services/space_service.dart";
 import "package:fcc_advert_mobile_app/src/types/form.dart";
+import "package:fcc_advert_mobile_app/src/utils/time.dart";
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart";
 
@@ -55,6 +56,7 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage1Fields(BuildContext context) {
     return [
       CustomTextField(
+        value: requestBody['space_cat_id']!=null?FormConstants.getSpaceCategoryNameById(requestBody["space_cat_id"]):"",
         label: "Space category",
         hintText: "Select Category",
         buttonType: "dropdown",
@@ -66,15 +68,18 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["data_collection_date"]!=null?TimeUtils.getTime(requestBody["data_collection_date"]):"",
         label: "Data collection date",
         hintText: "Enter Date",
         suffixIconInside: Icons.calendar_today,
         buttonType: "calendar",
         onSuffixIconTap: (value) {
+          print(value);
           requestBody["data_collection_date"] = value;
         },
       ),
       CustomTextField(
+        value: requestBody["name_of_person_collection_data"]??"",
         label: "Name of person collecting data",
         hintText: "Enter Name",
         onTextChanged: (value){
@@ -82,6 +87,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["name_of_advertise_agent_company_or_person"]??"",
         label: "Name of advertisement company/agent/organisation",
         hintText: "Enter advertisement company/agent/organisation",
         onTextChanged: (value){
@@ -89,6 +95,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["name_of_contact_person"]??"",
         label: "Business Name",
         hintText: "Enter Business Name",
         onTextChanged: (value){
@@ -96,6 +103,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["telephone"]??"",
         label: "Telephone",
         hintText: "Enter Telephone",
         onTextChanged: (value){
@@ -104,6 +112,7 @@ class _MultiFormState extends State<MultiForm> {
         type: TextFieldTypeEnum.number,
       ),
       CustomTextField(
+        value: requestBody["email"]??"",
         label: "Email",
         hintText: "Enter Email",
         onTextChanged: (value){
@@ -116,6 +125,7 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage2Fields(BuildContext context){
     return [
       CustomTextField(
+        value:requestBody["location"]??"",
         label: "Location",
         hintText: "Enter Location",
         onTextChanged: (value){
@@ -123,6 +133,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["stree_rd_no"]??"",
         label: "Street/Road No",
         hintText: "Enter Street Name",
         onTextChanged: (value){
@@ -130,6 +141,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["section_of_rd"]??"",
         label: "Section of road",
         hintText: "Enter Road Section",
         onTextChanged: (value){
@@ -137,6 +149,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["landmark"]?? "",
         label: "Landmark",
         hintText: "Enter landmark",
         onTextChanged: (value){
@@ -168,6 +181,7 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage3Fields(BuildContext context){
     return [
       RadioField(
+        isSelectedType: requestBody["description_property_advertisement"]??"" ,
         key: const ValueKey("desc_property"),
           propertyTypes: [
             "Private Property",
@@ -181,7 +195,7 @@ class _MultiFormState extends State<MultiForm> {
       ),
       CustomTextField(
         key: const ValueKey("cat_desc"),
-
+        value:  requestBody["advertisement_cat_desc"]??"",
         label: "Advertisement category description",
           hintText: "Enter Description",
           onTextChanged: (value){
@@ -190,7 +204,7 @@ class _MultiFormState extends State<MultiForm> {
       ),
       CustomTextField(
         key: const ValueKey("ad_type"),
-
+        value: requestBody["type_of_advertisement"]??"",
         label: "Type of Advertisement",
         hintText: "Select Type of Advertisement",
         suffixIconInside: Icons.arrow_drop_down,
@@ -201,6 +215,7 @@ class _MultiFormState extends State<MultiForm> {
         buttonType: "dropdown",
       ),
       RadioField(
+        isSelectedType: requestBody["position_of_billboard"]??"",
         propertyTypes: [
           "Free Standing",
           "Affixed",
@@ -212,6 +227,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["width_advertise"]??"",
           label: "Advertisement width",
           hintText: "Enter Width",
         type: TextFieldTypeEnum.number ,
@@ -224,6 +240,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["height_advertise"]??"",
         label: "Advertisement height",
         hintText: "Enter Height",
         type: TextFieldTypeEnum.number ,
@@ -246,6 +263,7 @@ class _MultiFormState extends State<MultiForm> {
           }),
       CustomTextField(
         key: const ValueKey("no_ad_slides"),
+        value: requestBody["no_advertisement_sides"]?? "",
         label: "Number of advertisement slides",
         hintText: "Enter Number",
         dropdownData: FormConstants.advertisementNumbers,
@@ -259,6 +277,7 @@ class _MultiFormState extends State<MultiForm> {
         key: const ValueKey("clearance_height"),
         label: "Clearance Height",
         hintText: "Enter Clearance Height",
+        value:  requestBody["clearance_height_advertise"]??"",
         onTextChanged: (value){
           requestBody["clearance_height_advertise"] = value;
         },
@@ -268,6 +287,7 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage4Fields(BuildContext context){
     return[
       CustomTextField(
+        value: requestBody["landowner_company_corporate"]?? "",
         label: "Landowner Company/Corporate",
         hintText: "Enter Landowner Company/Corporate",
         onTextChanged: (value){
@@ -275,6 +295,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["landowner_name"]??"",
         label: "Landowner Name",
         hintText: "Enter owner name",
         onTextChanged: (value){
@@ -282,6 +303,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["landlord_street_address"]??"",
         label: "Landowner Street Address",
         hintText: "Enter Street Address",
         onTextChanged: (value){
@@ -289,6 +311,7 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
+        value: requestBody["landlord_telephone"]??"",
         label: "Landowner Telephone",
         hintText: "Enter Telephone",
         onTextChanged: (value){
@@ -297,6 +320,7 @@ class _MultiFormState extends State<MultiForm> {
         type: TextFieldTypeEnum.number,
       ),
       CustomTextField(
+        value: requestBody["landlord_email"]??"",
         label: "Landowner Email",
         hintText: "Enter Email",
         onTextChanged: (value){

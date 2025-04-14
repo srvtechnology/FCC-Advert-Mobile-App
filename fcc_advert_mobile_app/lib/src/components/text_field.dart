@@ -101,7 +101,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             if (widget.onSuffixIconTap != null) {
               final value = await _selectDate(context);
               if (value != null) {
-                final formattedDate = TimeUtils.getTime(value);
+                final formattedDate = DateFormat('dd/MM/yyyy').format(value);
                 setState(() {
                   _controller.text = formattedDate;
                 });

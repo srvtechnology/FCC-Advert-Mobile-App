@@ -46,7 +46,7 @@ class AdvertisementDetailPage extends StatelessWidget {
       children: [
         _customText("Space ID: ${ad.id}"),
         _customText("Space category: ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}"),
-        _customText("Data collection date: ${TimeUtils.getTime(DateTime.parse(ad.dataCollectionDate!)) ?? "NA"}"),
+        _customText("Data collection date: ${TimeUtils.getTime(ad.dataCollectionDate!) ?? "NA"}"),
         _customText("Name of the person collecting data: ${ad.dataCollectionDate?? "NA"} "),
         _customText("Advertisement agent/company: ${ad.advertiseAgent?? "NA"}"),
         _customText("Contact person: ${ad.contactPerson?? "NA"}"),
