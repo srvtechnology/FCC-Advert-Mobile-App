@@ -14,7 +14,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
         (index) => {
       "id": "FCC/AC/123",
       "name": "Space Name",
-      "address": "Space Address",
+      "address": "Space Category",
       "category": "Category",
       "image": index % 2 == 0
           ? "https://via.placeholder.com/300x200?text=Ad+1"

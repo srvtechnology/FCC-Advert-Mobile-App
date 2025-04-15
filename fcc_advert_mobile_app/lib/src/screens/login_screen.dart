@@ -259,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   )
                                                       : null,
                                                 ),
-                                                Container(
+                                                /*Container(
                                                   width: double.infinity,
                                                   alignment: Alignment.topLeft,
                                                   child: TextButton(
@@ -274,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                ),
+                                                )*/
                                               ],
                                             ),
                                           )
