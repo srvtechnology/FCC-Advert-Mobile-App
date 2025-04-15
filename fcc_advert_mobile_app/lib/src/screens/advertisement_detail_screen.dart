@@ -6,7 +6,7 @@ import 'package:fcc_advert_mobile_app/src/screens/main.dart';
 import 'package:fcc_advert_mobile_app/src/utils/time.dart';
 import 'package:flutter/material.dart';
 
-class AdvertisementDetailPage extends StatelessWidget {
+class AdvertisementDetailPage extends StatefulWidget {
   final AdData ads;
 
   AdvertisementDetailPage({
@@ -15,23 +15,50 @@ class AdvertisementDetailPage extends StatelessWidget {
   });
 
   @override
+  State<AdvertisementDetailPage> createState() => _AdvertisementDetailPageState();
+}
+
+class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
+  bool _isLoading = false;
+
+  @override
+  void initState(){
+    super.initState();
+    _load();
+  }
+  void _load()async{
+    setState(() {
+      _isLoading=true;
+    });
+    if(FormConstants.spaceCategory.isEmpty){
+      await FormConstants.init();
+    }
+    setState(() {
+      _isLoading=false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: CustomAppBar( isTrack: true,),
       backgroundColor: AppColors.primaryBackground,
-      body: SingleChildScrollView(
+      body: _isLoading?Center(
+        child: CircularProgressIndicator(),
+      ):SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _basicInformationSection(context, ads),
-            _advertisementSection(context, ads),
-            _advertisementDetailsSection(context, ads),
-            _landownerDetailsSection(context, ads),
+            _basicInformationSection(context, widget.ads),
+            _advertisementSection(context, widget.ads),
+            _advertisementDetailsSection(context, widget.ads),
+            _landownerDetailsSection(context, widget.ads),
             AdImagePreview(
-              frontImage: ads.image1,
-              backImage: ads.image2,
-              wholeImage: ads.image3,
+              frontImage: widget.ads.image1,
+              backImage: widget.ads.image2,
+              wholeImage: widget.ads.image3,
             )
           ],
         ),
@@ -39,8 +66,8 @@ class AdvertisementDetailPage extends StatelessWidget {
     );
   }
 
-
   Widget _basicInformationSection(BuildContext context, AdData ad) {
+    print(FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId));
     return _cardLayout("Basic Information", _buildSectionCard(Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -57,6 +84,7 @@ class AdvertisementDetailPage extends StatelessWidget {
       ],
     ),));
   }
+
   Widget _advertisementSection(BuildContext context, AdData ad){
     return _cardLayout("Advertisement Identification", _buildSectionCard(
         Column(
@@ -86,7 +114,6 @@ class AdvertisementDetailPage extends StatelessWidget {
     );
   }
 
-
   Widget _advertisementDetailsSection(BuildContext context, AdData ad){
     return _cardLayout("Advertisement Details Section", _buildSectionCard(
         Column(
@@ -97,11 +124,12 @@ class AdvertisementDetailPage extends StatelessWidget {
             _customText("Position of Billboard: ${ad.positionOfBillboard ?? "NA"}"),
             _customText("Length: ${ad.length ?? "NA"}"),
             _customText("Width: ${ad.width ?? "NA"}"),
-            _customText("Area: ${(ad.width ?? 0) * (ad.length ?? 0)}"),
+            _customText("Area: ${ad.area ?? "NA"}"),
           ],
         )
     ));
   }
+
   Widget _landownerDetailsSection(BuildContext context, AdData ad){
     return _cardLayout("Landowner Details",  _buildSectionCard(
         Column(
@@ -116,11 +144,13 @@ class AdvertisementDetailPage extends StatelessWidget {
         )
     ));
   }
+
   Widget _customText(String text){
     return Text(text, style: TextStyle(
       fontWeight: FontWeight.w500
     ),);
   }
+
   Widget _buildImageCard(String label, String imageUrl) {
     return Card(
       margin: const EdgeInsets.only(right: 12),
@@ -283,6 +313,28 @@ class TimeoutImage extends StatelessWidget {
     }
   }
 
+  void _previewImage(BuildContext context) {
+    if (imageUrl == null || imageUrl!.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: InteractiveViewer(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(imageUrl!),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -296,11 +348,14 @@ class TimeoutImage extends StatelessWidget {
           } else if (snapshot.hasError || !snapshot.hasData) {
             return const Icon(Icons.error_outline_rounded);
           } else {
-            return Image(
-              image: snapshot.data!,
-              width: width,
-              height: height,
-              fit: BoxFit.fitWidth,
+            return GestureDetector(
+              onTap: ()=>_previewImage(context),
+              child: Image(
+                image: snapshot.data!,
+                width: width,
+                height: height,
+                fit: BoxFit.fitWidth,
+              ),
             );
           }
         },

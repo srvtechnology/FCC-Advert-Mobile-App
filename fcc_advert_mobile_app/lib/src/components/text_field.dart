@@ -211,11 +211,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     : [],
                 controller: _controller,
                 onChanged: (value) {
+                  print(value);
                   if ((widget.buttonType == null || widget.suffixIconInside == null) && widget.onTextChanged != null) {
-                    if (widget.type == TextFieldTypeEnum.email) {
-                      widget.onTextChanged!(value);
-                      // Optionally call a callback or show error message
-                    }
+                    widget.onTextChanged!(value);
 
                   }
                 },

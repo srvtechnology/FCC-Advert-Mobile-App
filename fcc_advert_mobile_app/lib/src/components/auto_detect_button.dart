@@ -1,17 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 
-class AdvertisementAreaInput extends StatelessWidget {
-  final TextEditingController controller;
+class AdvertisementAreaInput extends StatefulWidget {
+
   final VoidCallback onAutoDetect;
   final void Function(String)? onChange;
-
+  final String? value;
   const AdvertisementAreaInput({
     super.key,
     this.onChange,
-    required this.controller,
+    this.value,
     required this.onAutoDetect,
   });
+
+  @override
+  State<AdvertisementAreaInput> createState() => _AdvertisementAreaInputState();
+}
+
+class _AdvertisementAreaInputState extends State<AdvertisementAreaInput> {
+
+  late TextEditingController _controller;
+
+  @override
+  void initState(){
+    super.initState();
+    _controller = TextEditingController(text:widget.value??"");
+  }
+
+  @override
+  void didUpdateWidget(covariant AdvertisementAreaInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value && widget.value != _controller.text) {
+      _controller.text = widget.value ?? "";
+      print(widget.value);
+      widget.onChange!(widget.value??"");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +55,15 @@ class AdvertisementAreaInput extends StatelessWidget {
           children: [
             Expanded(
               child: TextField(
-                controller: controller,
+                controller: _controller,
                 onChanged: (value){
-                  if(onChange != null){
-                    onChange!(value);
+                  if(widget.onChange != null){
+                    widget.onChange!(value);
                   }
                 },
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  hintText: "Enter the name",
+                  hintText: "Enter Area",
                   hintStyle: TextStyle(color: AppColors.placeholderText),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -59,7 +83,7 @@ class AdvertisementAreaInput extends StatelessWidget {
             const SizedBox(width: 8),
             ElevatedButton(
               onPressed: (){
-                onAutoDetect();
+                widget.onAutoDetect();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.iconColor, // Light purple/pink

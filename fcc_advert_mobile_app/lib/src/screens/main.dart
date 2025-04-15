@@ -49,7 +49,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
         "",
         ""
       );// Replace with your API endpoint
-
+      print(response["data"]);
       if (response["status"] == 200) {
         print("refresh");
         final List<dynamic> data = response["data"];
@@ -299,6 +299,7 @@ class AdData {
   });
 
   factory AdData.fromJson(Map<String, dynamic> json) {
+    print(json);
     return AdData(
       id: json['id'],
       dataCollectionDate: json['data_collection_date'],

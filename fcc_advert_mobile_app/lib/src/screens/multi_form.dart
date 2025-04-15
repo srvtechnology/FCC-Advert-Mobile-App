@@ -47,7 +47,9 @@ class _MultiFormState extends State<MultiForm> {
   }
 
   Future<void> loadFormConstants() async {
-    await FormConstants.init();
+    if(FormConstants.spaceCategory.isEmpty){
+      await FormConstants.init();
+    }
     setState(() {
       _isLoading = false;
     });
@@ -227,35 +229,41 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
-        value: requestBody["width_advertise"]??"",
+        // value:width.toString(),
           label: "Advertisement width",
           hintText: "Enter Width",
         type: TextFieldTypeEnum.number ,
         onTextChanged: (value){
-
-            setState(() {
+          print(value);
+          print(width.toString());
+          setState(() {
               width = double.parse(value);
+              requestBody["area_advertise"] = width * height;
+              requestBody["width_advertise"] = width ;
             });
-          requestBody["width_advertise"] = value;
+          print(widget.toString());
         },
       ),
       CustomTextField(
-        value: requestBody["height_advertise"]??"",
+        // value: height.toString(),
         label: "Advertisement height",
         hintText: "Enter Height",
         type: TextFieldTypeEnum.number ,
         onTextChanged: (value){
+
           setState(() {
             height = double.parse(value);
+            requestBody["area_advertise"] = width * height;
+            requestBody["lenght_advertise"] = height;
           });
-          requestBody["height_advertise"] = value;
+
         },
       ),
       // need to change the logic for onChange here
       AdvertisementAreaInput(
-          controller: TextEditingController(text:"${width * height}" ),
+          value: (width * height).toStringAsFixed(2),
           onChange: (value){
-            print(value);
+            print("Area ${value}");
             requestBody["area_advertise"] = value;
           },
           onAutoDetect: (){

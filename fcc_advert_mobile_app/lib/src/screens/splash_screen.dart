@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:fcc_advert_mobile_app/src/client.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
+import 'package:fcc_advert_mobile_app/src/constants/form.dart';
 import 'package:fcc_advert_mobile_app/src/screens/login_screen.dart';
 import 'package:fcc_advert_mobile_app/src/screens/main.dart';
 import 'package:flutter/material.dart';
@@ -27,13 +28,16 @@ class _SplashScreenState extends State<SplashScreen> {
     setState(() {
       _isTrue=true;
     });
-    apiClient.isToken().then((value)=>{
-      if (value){
-        Navigator.pushNamedAndRemoveUntil(context, AdvertisementListPage.routename,(route)=>false)
-      }else{
-        Navigator.pushNamedAndRemoveUntil(context, LoginScreen.routename, (route)=>false)
-    }
+    FormConstants.init().then((_){
+      apiClient.isToken().then((value)=>{
+        if (value){
+          Navigator.pushNamedAndRemoveUntil(context, AdvertisementListPage.routename,(route)=>false)
+        }else{
+          Navigator.pushNamedAndRemoveUntil(context, LoginScreen.routename, (route)=>false)
+        }
+      });
     });
+
 
   }
   @override

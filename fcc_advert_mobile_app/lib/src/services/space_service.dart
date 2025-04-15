@@ -132,6 +132,7 @@ class SpaceService{
 
   Future<dynamic> createSpace(Map<String,dynamic> data) async{
     try{
+      print(data);
       var response = await apiClient.post(
           "/spaces",
           data: data

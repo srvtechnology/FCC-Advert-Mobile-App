@@ -5,10 +5,11 @@ import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool? isProfile;
-
+  final bool? isTrack;
   const CustomAppBar({
     Key? key,
-    this.isProfile = false
+    this.isProfile = false,
+    this.isTrack =false
   }) : super(key: key);
 
   @override
@@ -29,6 +30,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         },
       ),
       actions: [
+        if(isTrack!)...[
+          IconButton(
+            icon: const Icon(
+                Icons.my_location_rounded,
+                color: AppColors.iconColor
+            ),
+            onPressed: ()async{
+
+              // Navigator.pushNamedAndRemoveUntil(context, "/login",(route)=>false);
+            },
+          ),
+        ],
         IconButton(
           icon: const Icon(
               Icons.logout,

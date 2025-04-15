@@ -59,6 +59,7 @@ class FormConstants{
     }
   }
   static String? getSpaceCategoryNameById(dynamic id) {
+    print(spaceCategory.length);
     final match = FormConstants.spaceCategory.firstWhere(
           (option) => option.value == id,
       orElse: () => OptionItem(value: null, name: '-'), // fallback
