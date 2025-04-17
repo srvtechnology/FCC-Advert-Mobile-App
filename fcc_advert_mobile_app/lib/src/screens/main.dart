@@ -2,10 +2,14 @@ import 'package:fcc_advert_mobile_app/src/components/app_bar.dart';
 import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/text_field.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
+import 'package:fcc_advert_mobile_app/src/constants/form.dart';
 import 'package:fcc_advert_mobile_app/src/screens/advertisement_detail_screen.dart';
 import 'package:fcc_advert_mobile_app/src/screens/multi_form.dart';
 import 'package:fcc_advert_mobile_app/src/services/space_service.dart';
+import 'package:fcc_advert_mobile_app/src/utils/Constants.dart';
 import 'package:flutter/material.dart';
+
+import '../utils/time.dart';
 
 class AdvertisementListPage extends StatefulWidget {
   static String routename = "/list";
@@ -113,7 +117,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       appBar: CustomAppBar(
         isProfile: true,
       ),
@@ -121,7 +125,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(top: 18.0,bottom:8.0,left: 8.0,right: 8.0),
             child: Row(
               children: [
                 Expanded(
@@ -129,19 +133,11 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                   child: CustomTextField(
                     disableLabel: true,
                     hintText: "Search space by ID",
-                    onTextChanged: (value){
+                    onTextChanged: (value) {
                       _filterAdsById(value);
                     },
                   ),
                 ),
-                // SizedBox(width: 8.0),
-                // Expanded(
-                //   flex: 3,
-                //     child: Container(
-                //       height: 35,
-                //         child: customButton(onPressed: (){
-                //           _filterAdsById(searchId!);
-                //         }, text: "Search"))),
               ],
             ),
           ),
@@ -153,8 +149,6 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                     controller: _scrollController,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
                     ),
                     itemCount: _ads.length,
                     itemBuilder: (context, index) {
@@ -163,7 +157,8 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => AdvertisementDetailPage(ads: _ads[index]),
+                              builder: (context) =>
+                                  AdvertisementDetailPage(ads: _ads[index]),
                             ),
                           );
                         },
@@ -180,31 +175,24 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
               ],
             ),
           ),
-
-
         ],
       ),
-      floatingActionButton: Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            color: AppColors.iconColor, // 🌈 Your background color here
-            shape: BoxShape.circle, // Makes it round like a FAB
-          ),
-          child: IconButton(
-              onPressed: (){
-                Navigator.pushNamed(context, MultiForm.routename).then((_)async{
-                  await fetchAds();
-                });
-              },
-              icon: Icon(
-                  Icons.add,
-                  color: AppColors.primaryBackground,
-                size: 50,
-              )
-          ),
-      )
-    );
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.iconColor,
+        shape: const CircleBorder(), // 👈 Ensures circle
+        onPressed: () {
+          Navigator.pushNamed(context, MultiForm.routename).then((_) async {
+            await fetchAds();
+          });
+        },
+        child: Icon(
+          Icons.add,
+          size: 30,
+          color: AppColors.primaryBackground,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat, );
+
   }
 }
 
@@ -401,6 +389,7 @@ class AdvertisementCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: AppColors.cardbg,
       margin: EdgeInsets.all(5.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,39 +399,65 @@ class AdvertisementCard extends StatelessWidget {
             child:Image.network(
               "https://fccadmin.org/server/storage/${ad.image1}",
               width: double.infinity,
-              height: 50,
+              height: 100,
               fit: BoxFit.fill,
               errorBuilder: (context, error, stackTrace) {
                 print(error);
                 return Image.asset('assets/banner_dummy.png',
                   width: double.infinity,
-
+                  height: 100,
                   fit: BoxFit.fill,); // Add a placeholder image in assets
               },
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Space ID - ${ad.id}',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
+                  child: Text(
+                    'Space ID - ${ad.id}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontFamily: REGULAR),
+                  ),
                 ),
-                Text(
-                  'Space Name - ${ad.landownerName}',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
+                SizedBox(height: 1,),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
+                  child: Text(
+                    'Space Name - ${ad.landownerName}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontFamily: REGULAR),
+                  ),
                 ),
-                Text(
-                  'Space Address - ${ad.rate}',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
+
+                SizedBox(height: 1,),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
+                  child: Text(
+                    'Space Catg. - ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontFamily: REGULAR),
+                  ),
+                ),
+                SizedBox(height: 1,),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
+                  child: Text(
+                    'DOC - ${TimeUtils.getTime(ad.dataCollectionDate!) ?? "NA"}',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(fontFamily: REGULAR),
+                  ),
                 ),
               ],
             ),

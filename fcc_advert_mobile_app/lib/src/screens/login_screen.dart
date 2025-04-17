@@ -2,6 +2,7 @@ import 'package:fcc_advert_mobile_app/src/components/button.dart';
 import 'package:fcc_advert_mobile_app/src/components/login_heading.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 import 'package:fcc_advert_mobile_app/src/screens/otp_screen.dart';
+import 'package:fcc_advert_mobile_app/src/utils/Constants.dart';
 import 'package:flutter/material.dart';
 import '../services/login_service.dart';
 class LoginScreen extends StatefulWidget {
@@ -84,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           fontSize: 30,
                                           fontWeight: FontWeight.w500,
                                           color: AppColors.text,
+                                          fontFamily: InclusiveSans_Bold
                                         ),
                                       ),
                                     )),
@@ -106,6 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       fontWeight: FontWeight.w500,
                                                       fontSize: 16,
                                                       color: AppColors.text
+                                                      ,fontFamily: InclusiveSans_Bold
                                                   ),
                                                 ),
                                                 SizedBox(height: 5,),
@@ -139,6 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       fontWeight: FontWeight.w500,
                                                       fontSize: 16,
                                                       color: AppColors.text
+                                                      ,fontFamily: InclusiveSans_Bold
                                                   ),
                                                 ),
                                                 SizedBox(height: 5,),

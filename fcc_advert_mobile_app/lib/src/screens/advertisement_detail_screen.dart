@@ -3,90 +3,186 @@ import 'package:fcc_advert_mobile_app/src/components/app_bar.dart';
 import 'package:fcc_advert_mobile_app/src/config/colors.dart';
 import 'package:fcc_advert_mobile_app/src/constants/form.dart';
 import 'package:fcc_advert_mobile_app/src/screens/main.dart';
+import 'package:fcc_advert_mobile_app/src/utils/Constants.dart';
 import 'package:fcc_advert_mobile_app/src/utils/time.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AdvertisementDetailPage extends StatefulWidget {
   final AdData ads;
 
-  AdvertisementDetailPage({
-    super.key,
-    required this.ads
-  });
+  AdvertisementDetailPage({super.key, required this.ads});
 
   @override
-  State<AdvertisementDetailPage> createState() => _AdvertisementDetailPageState();
+  State<AdvertisementDetailPage> createState() =>
+      _AdvertisementDetailPageState();
 }
 
 class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
   bool _isLoading = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _load();
   }
-  void _load()async{
+
+  void _load() async {
     setState(() {
-      _isLoading=true;
+      _isLoading = true;
     });
-    if(FormConstants.spaceCategory.isEmpty){
+    if (FormConstants.spaceCategory.isEmpty) {
       await FormConstants.init();
     }
     setState(() {
-      _isLoading=false;
+      _isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: CustomAppBar( isTrack: true,),
+      appBar: CustomAppBar(isTrack: false),
       backgroundColor: AppColors.primaryBackground,
-      body: _isLoading?Center(
-        child: CircularProgressIndicator(),
-      ):SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-        child: Column(
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Stack(
+                children: [
+                  // Scrollable content
+                  Positioned.fill(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _basicInformationSection(context, widget.ads),
+                          _advertisementSection(context, widget.ads),
+                          _advertisementDetailsSection(context, widget.ads),
+                          _landownerDetailsSection(context, widget.ads),
+                          AdImagePreview(
+                            frontImage: widget.ads.image1,
+                            backImage: widget.ads.image2,
+                            wholeImage: widget.ads.image3,
+                          ),
+                          SizedBox(height: 50), // bottom spacing if needed
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Overlapping Track Button
+                  Positioned(
+                    top: 0,
+                    right: 16,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: SizedBox(
+                        height: 25,
+                        width: 120,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (widget.ads.gpsCoordinate!.isNotEmpty) {
+                              List<String> parts = widget.ads.gpsCoordinate!
+                                  .split(" ");
+                              double latitude = double.parse(parts[0]);
+                              double longitude = double.parse(parts[1]);
+
+                              openMap(latitude, longitude);
+                            }
+                          },
+                          label: Padding(
+                            padding: const EdgeInsets.only(
+                              left: 8.0,
+                              right: 8.0,
+                            ),
+                            child: Text(
+                              "Track",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontFamily: InclusiveSans_Bold,
+                              ),
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.iconColor,
+                            foregroundColor: AppColors.primaryBackground,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+    );
+  }
+  Future<void> openMap(double lat, double lng) async {
+    try {
+      final Uri url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+      print(">>>>map url $url");
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching map: $e');
+      // Optional: show user-friendly feedback
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Could not open Google Maps")),
+      // );
+    }
+  }
+
+
+  Widget _basicInformationSection(BuildContext context, AdData ad) {
+    print(FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId));
+    return _cardLayout(
+      "Basic Information",
+      _buildSectionCard(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _basicInformationSection(context, widget.ads),
-            _advertisementSection(context, widget.ads),
-            _advertisementDetailsSection(context, widget.ads),
-            _landownerDetailsSection(context, widget.ads),
-            AdImagePreview(
-              frontImage: widget.ads.image1,
-              backImage: widget.ads.image2,
-              wholeImage: widget.ads.image3,
-            )
+            _customText("Space ID: ${ad.id}"),
+            _customText(
+              "Space category: ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}",
+            ),
+            _customText(
+              "Data collection date: ${TimeUtils.getTime(ad.dataCollectionDate!) ?? "NA"}",
+            ),
+            _customText(
+              "Name of the person collecting data: ${ad.nameOfPersonCollectingData ?? "NA"} ",
+            ),
+            _customText(
+              "Advertisement agent/company: ${ad.advertiseAgent ?? "NA"}",
+            ),
+            _customText("Contact person: ${ad.contactPerson ?? "NA"}"),
+            _customText("Telephone: ${ad.telephone ?? "NA"}"),
+            _customText("Email: ${ad.email ?? "NA"}"),
+            _customText("Space created by: ${ad.createdByUser!.name ?? "NA"}"),
+            _customText(
+              "Space created by user ID: ${ad.createdUserId ?? "NA"}",
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _basicInformationSection(BuildContext context, AdData ad) {
-    print(FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId));
-    return _cardLayout("Basic Information", _buildSectionCard(Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _customText("Space ID: ${ad.id}"),
-        _customText("Space category: ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}"),
-        _customText("Data collection date: ${TimeUtils.getTime(ad.dataCollectionDate!) ?? "NA"}"),
-        _customText("Name of the person collecting data: ${ad.dataCollectionDate?? "NA"} "),
-        _customText("Advertisement agent/company: ${ad.advertiseAgent?? "NA"}"),
-        _customText("Contact person: ${ad.contactPerson?? "NA"}"),
-        _customText("Telephone: ${ad.telephone?? "NA"}"),
-        _customText("Email: ${ad.email?? "NA"}"),
-        _customText("Space created by: ${ad.createdByUser!.name?? "NA"}"),
-        _customText("Space created by user ID: ${ad.createdUserId?? "NA"}"),
-      ],
-    ),));
-  }
-
-  Widget _advertisementSection(BuildContext context, AdData ad){
-    return _cardLayout("Advertisement Identification", _buildSectionCard(
+  Widget _advertisementSection(BuildContext context, AdData ad) {
+    return _cardLayout(
+      "Advertisement Identification",
+      _buildSectionCard(
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -96,59 +192,79 @@ class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
             _customText("Landmark: ${ad.landmark ?? "NA"}"),
             _customText("GPS Coordinate: ${ad.gpsCoordinate ?? "NA"}"),
           ],
-        )
-    ));
+        ),
+      ),
+    );
   }
 
-  Widget _cardLayout(String title, Widget child){
+  Widget _cardLayout(String title, Widget child) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child:  Column(
+      padding: const EdgeInsets.only(left:3.0,bottom: 5.0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
-          const SizedBox(height: 8),
-         child
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              fontFamily: Light_MEDIUM,
+            ),
+          ),
+          child,
         ],
       ),
     );
   }
 
-  Widget _advertisementDetailsSection(BuildContext context, AdData ad){
-    return _cardLayout("Advertisement Details Section", _buildSectionCard(
+  Widget _advertisementDetailsSection(BuildContext context, AdData ad) {
+    return _cardLayout(
+      "Advertisement Details Section",
+      _buildSectionCard(
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _customText("Description Property: ${ad.description ?? "NA"}"),
-            _customText("Advertisement Category: ${ad.advertisementCategory ?? "NA"}"),
-            _customText("Position of Billboard: ${ad.positionOfBillboard ?? "NA"}"),
+            _customText(
+              "Advertisement Category: ${ad.advertisementCategory ?? "NA"}",
+            ),
+            _customText(
+              "Position of Billboard: ${ad.positionOfBillboard ?? "NA"}",
+            ),
             _customText("Length: ${ad.length ?? "NA"}"),
             _customText("Width: ${ad.width ?? "NA"}"),
             _customText("Area: ${ad.area ?? "NA"}"),
           ],
-        )
-    ));
+        ),
+      ),
+    );
   }
 
-  Widget _landownerDetailsSection(BuildContext context, AdData ad){
-    return _cardLayout("Landowner Details",  _buildSectionCard(
+  Widget _landownerDetailsSection(BuildContext context, AdData ad) {
+    return _cardLayout(
+      "Landowner Details",
+      _buildSectionCard(
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _customText("Landowner Company: ${ad.landownerCompany ?? "NA"}"),
             _customText("Landowner Name: ${ad.landownerName ?? "NA"}"),
-            _customText("Landowner Street Address: ${ad.landlordStreetAddress ?? "NA"}"),
+            _customText(
+              "Landowner Street Address: ${ad.landlordStreetAddress ?? "NA"}",
+            ),
             _customText("Landowner Telephone: ${ad.landlordTelephone ?? "NA"}"),
-            _customText("Landowner Email: ${ad.landlordEmail ?? "NA"}")
+            _customText("Landowner Email: ${ad.landlordEmail ?? "NA"}"),
           ],
-        )
-    ));
+        ),
+      ),
+    );
   }
 
-  Widget _customText(String text){
-    return Text(text, style: TextStyle(
-      fontWeight: FontWeight.w500
-    ),);
+  Widget _customText(String text) {
+    return Text(
+      text,
+      style: TextStyle(fontWeight: FontWeight.w500, fontFamily: REGULAR),
+    );
   }
 
   Widget _buildImageCard(String label, String imageUrl) {
@@ -164,8 +280,9 @@ class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
               width: 100,
               height: 150,
               fit: BoxFit.fitHeight,
-              errorBuilder: (context, error, stackTrace) =>
-                  Container(width: 100, height: 100, color: Colors.grey),
+              errorBuilder:
+                  (context, error, stackTrace) =>
+                      Container(width: 100, height: 100, color: Colors.grey),
             ),
           ),
           const SizedBox(height: 4),
@@ -227,15 +344,15 @@ class AdImagePreview extends StatelessWidget {
     this.wholeImage,
   });
 
-  Widget _buildImage(BuildContext context,String? imageUrl, String label) {
+  Widget _buildImage(BuildContext context, String? imageUrl, String label) {
     return Column(
       children: [
         Container(
           width: 100,
-          height: 100 ,
+          height: 100,
           child: Center(
             child: TimeoutImage(
-                imageUrl: "https://fccadmin.org/server/storage/${imageUrl}" ?? "",
+              imageUrl: "https://fccadmin.org/server/storage/${imageUrl}" ?? "",
             ),
           ),
         ),
@@ -250,7 +367,10 @@ class AdImagePreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Images", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const Text(
+          "Images",
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(12),
@@ -261,9 +381,9 @@ class AdImagePreview extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildImage(context,frontImage, "Front view"),
-              _buildImage(context,backImage, "Back view"),
-              _buildImage(context,wholeImage, "Whole view"),
+              _buildImage(context, frontImage, "Front view"),
+              _buildImage(context, backImage, "Back view"),
+              _buildImage(context, wholeImage, "Whole view"),
             ],
           ),
         ),
@@ -271,8 +391,6 @@ class AdImagePreview extends StatelessWidget {
     );
   }
 }
-
-
 
 class TimeoutImage extends StatelessWidget {
   final String? imageUrl;
@@ -297,7 +415,7 @@ class TimeoutImage extends StatelessWidget {
 
     final imageStream = networkImage.resolve(const ImageConfiguration());
     final listener = ImageStreamListener(
-          (info, _) => completer.complete(networkImage),
+      (info, _) => completer.complete(networkImage),
       onError: (error, _) => completer.completeError(error!),
     );
 
@@ -349,7 +467,7 @@ class TimeoutImage extends StatelessWidget {
             return const Icon(Icons.error_outline_rounded);
           } else {
             return GestureDetector(
-              onTap: ()=>_previewImage(context),
+              onTap: () => _previewImage(context),
               child: Image(
                 image: snapshot.data!,
                 width: width,
@@ -363,5 +481,3 @@ class TimeoutImage extends StatelessWidget {
     );
   }
 }
-
-

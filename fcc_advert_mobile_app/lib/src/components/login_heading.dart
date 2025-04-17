@@ -1,3 +1,4 @@
+import 'package:fcc_advert_mobile_app/src/utils/Constants.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 // Custom header component function
@@ -69,6 +70,7 @@ Widget customHeader({
                 fontSize: resolutionFontSize,
                 color: resolutionColor,
                 fontWeight: resolutionFontWeight,
+                fontFamily: REGULAR
               ),
             ),
           ),

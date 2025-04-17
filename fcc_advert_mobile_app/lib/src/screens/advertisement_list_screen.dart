@@ -116,7 +116,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                       children: [
                         Text("Space ID - ${ad["id"]}", style: TextStyle(fontWeight: FontWeight.bold)),
                         Text("Space Name - ${ad["name"]}"),
-                        Text("Space Address - ${ad["address"]}"),
+                        Text("Space Category - ${ad["address"]}"),
                         Text("Category - ${ad["category"]}"),
                       ],
                     ),
