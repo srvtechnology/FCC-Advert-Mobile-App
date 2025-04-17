@@ -88,12 +88,24 @@ class _MultiFormState extends State<MultiForm> {
           requestBody["name_of_person_collection_data"] = value;
         },
       ),
-      CustomTextField(
+      /*CustomTextField(
         value: requestBody["name_of_advertise_agent_company_or_person"]??"",
         label: "Name of advertisement company/agent/organisation",
         hintText: "Enter advertisement company/agent/organisation",
         onTextChanged: (value){
           requestBody["name_of_advertise_agent_company_or_person"] = value;
+        },
+      ),*/
+      CustomTextField(
+        value: requestBody['name_of_advertise_agent_company_or_person']!=null?FormConstants.getAgentNameById(requestBody["space_cat_id"]):"",
+        label: "Name of advertisement company/agent/organisation",
+        hintText: "Select Agent",
+        buttonType: "dropdown",
+        dropdownData: FormConstants.agentList,
+        suffixIconInside: Icons.arrow_drop_down,
+        onSuffixIconTap: (value){
+          print(value);
+          requestBody["name_of_advertise_agent_company_or_person"] = value.name.toString();
         },
       ),
       CustomTextField(
@@ -599,6 +611,6 @@ class _MultiFormState extends State<MultiForm> {
           ],
         );
       }),
-    );;
+    );
   }
 }

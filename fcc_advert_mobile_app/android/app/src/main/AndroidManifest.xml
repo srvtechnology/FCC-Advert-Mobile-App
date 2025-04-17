@@ -14,7 +14,7 @@
     </queries>
 
     <application
-        android:label="fcc_advert_mobile_app"
+        android:label="FCC AMS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

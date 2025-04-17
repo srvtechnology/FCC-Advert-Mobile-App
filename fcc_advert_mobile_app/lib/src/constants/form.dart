@@ -66,4 +66,14 @@ class FormConstants{
     );
     return match.name;
   }
+
+
+  static String? getAgentNameById(dynamic id) {
+    final match = agentList.firstWhere(
+          (option) => option.value == id,
+      orElse: () => OptionItem(value: null, name: '-'),
+    );
+    return match.name;
+  }
+
 }
