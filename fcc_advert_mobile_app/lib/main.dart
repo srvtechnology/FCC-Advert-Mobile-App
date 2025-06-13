@@ -1,7 +1,3 @@
-import 'package:fcc_advert_mobile_app/src/constants/form.dart';
-import 'package:fcc_advert_mobile_app/src/screens/advertisement_detail_screen.dart';
-import 'package:fcc_advert_mobile_app/src/screens/camera_screen.dart';
-import 'package:fcc_advert_mobile_app/src/screens/home.dart';
 import 'package:fcc_advert_mobile_app/src/screens/main.dart';
 import 'package:fcc_advert_mobile_app/src/screens/login_screen.dart';
 import 'package:fcc_advert_mobile_app/src/screens/multi_form.dart';
@@ -9,7 +5,10 @@ import 'package:fcc_advert_mobile_app/src/screens/otp_screen.dart';
 import 'package:fcc_advert_mobile_app/src/screens/profile_screen.dart';
 import 'package:fcc_advert_mobile_app/src/screens/splash_screen.dart';
 import 'package:fcc_advert_mobile_app/src/storage.dart';
+import 'package:fcc_advert_mobile_app/src/utils/main_form_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -22,12 +21,18 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiProvider(
+
+providers:[
+  ChangeNotifierProvider(create: (_) => MainformProvider()),
+],
+
+      child: MaterialApp(
         navigatorKey: navigatorKey,
 
         debugShowCheckedModeBanner: false,
-      initialRoute: SplashScreen.routename,
-      routes: {
+        initialRoute: SplashScreen.routename,
+        routes: {
           ProfileScreen.routename: (context)=> ProfileScreen(),
           LoginScreen.routename: (context)=>LoginScreen(),
           AdvertisementListPage.routename : (context)=>AdvertisementListPage(),
@@ -36,8 +41,8 @@ class MyApp extends StatelessWidget {
           AdvertisementListPage.routename : (context)=>AdvertisementListPage(),
           SplashScreen.routename : (context)=>SplashScreen()
           // CustomCameraScreen.routename : (context)=>CustomCameraScreen(),
-      }
-    );
+        }
+    ));
   }
 }
 

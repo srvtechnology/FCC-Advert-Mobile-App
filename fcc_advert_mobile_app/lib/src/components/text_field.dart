@@ -1,10 +1,9 @@
-import 'package:fcc_advert_mobile_app/src/constants/form.dart';
-import 'package:fcc_advert_mobile_app/src/types/form.dart';
-import 'package:fcc_advert_mobile_app/src/utils/time.dart';
 import 'package:flutter/material.dart';
-import 'package:fcc_advert_mobile_app/src/config/colors.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
+import '../config/colors.dart';
+import '../constants/form.dart';
+import '../types/form.dart';
 
 class CustomTextField extends StatefulWidget {
   final String? label;
@@ -33,10 +32,10 @@ class CustomTextField extends StatefulWidget {
     this.type,
     this.value,
     this.disableLabel = false,
-    this.dropdownData
-  }):assert(
-    onSuffixIconTap==null || buttonType!=null,
-    'If On SuffixIconTap is provided, buttonType must not be null'
+    this.dropdownData,
+  }) : assert(
+  onSuffixIconTap == null || buttonType != null,
+  'If On SuffixIconTap is provided, buttonType must not be null',
   );
 
   @override
@@ -52,12 +51,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _controller = TextEditingController(text: widget.value ?? "");
   }
 
-  void setText(String value) {
-    setState(() {
-      _controller.text = value;
-    });
-  }
-
   @override
   void didUpdateWidget(covariant CustomTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -66,14 +59,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
     }
   }
 
-  String getText() {
-    return _controller.text;
-  }
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
+
   Future _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -82,14 +73,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
       lastDate: DateTime(2101),
     );
     return picked;
-
-    // if (picked != null) {
-    //   final formattedDate = DateFormat('dd/MM/yyyy').format(picked);
-    //   return formattedDate;
-    // }
-
-    return null;
   }
+
   Widget? _buildSuffixIcon() {
     if (widget.suffixIconInside == null || widget.buttonType == null) return null;
 
@@ -97,7 +82,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       case 'calendar':
         return IconButton(
           icon: Icon(widget.suffixIconInside, color: AppColors.iconColor),
-          onPressed: () async{
+          onPressed: () async {
             if (widget.onSuffixIconTap != null) {
               final value = await _selectDate(context);
               if (value != null) {
@@ -107,7 +92,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 });
                 widget.onSuffixIconTap!(value.toString());
               }
-
             }
           },
         );
@@ -119,27 +103,28 @@ class _CustomTextFieldState extends State<CustomTextField> {
             final selected = await showModalBottomSheet<OptionItem>(
               context: context,
               isScrollControlled: true,
-              backgroundColor: AppColors.primaryBackground, // custom background
+              backgroundColor: AppColors.primaryBackground,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
               builder: (context) {
                 return SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: widget.dropdownData!
-                          .map((e) => ListTile(
-                        title: Text(
-                          e.name,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context, e); // return the selected item
-                        },
-                      ))
-                          .toList(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: ListView.builder(
+                      itemCount: widget.dropdownData?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        final item = widget.dropdownData![index];
+                        return ListTile(
+                          title: Text(
+                            item.name,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context, item);
+                          },
+                        );
+                      },
                     ),
                   ),
                 );
@@ -155,14 +140,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
           },
         );
 
-
-
-      case 'iconbutton':
       default:
         return IconButton(
           icon: Icon(widget.suffixIconInside, color: AppColors.iconColor),
           onPressed: () {
-
             if (widget.onSuffixIconTap != null) {
               widget.onSuffixIconTap!(_controller.text);
             }
@@ -189,7 +170,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if(!widget.disableLabel!)...[
+        if (!widget.disableLabel!) ...[
           Text(
             widget.label!,
             style: TextStyle(
@@ -204,17 +185,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
           children: [
             Expanded(
               child: TextField(
-                readOnly: widget.buttonType=="dropdown"?true:false,
+                readOnly: widget.buttonType == "dropdown" ? true : false,
                 keyboardType: _getKeyboardType(),
-                inputFormatters: widget.type == TextFieldTypeEnum.number
-                    ? [FilteringTextInputFormatter.digitsOnly]
-                    : [],
+                inputFormatters: widget.type == TextFieldTypeEnum.number ? [] : [],
                 controller: _controller,
                 onChanged: (value) {
-                  print(value);
-                  if ((widget.buttonType == null || widget.suffixIconInside == null) && widget.onTextChanged != null) {
+                  if ((widget.buttonType == null || widget.suffixIconInside == null) &&
+                      widget.onTextChanged != null) {
                     widget.onTextChanged!(value);
-
                   }
                 },
                 decoration: InputDecoration(
@@ -245,7 +223,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     widget.onTrailingIconTap!(_controller.text);
                   }
                 },
-                icon:  Icon(
+                icon: Icon(
                   widget.trailingIconOutside,
                   color: AppColors.iconColor,
                   size: 30,

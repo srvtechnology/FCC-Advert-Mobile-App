@@ -8,11 +8,12 @@ import 'package:fcc_advert_mobile_app/src/screens/multi_form.dart';
 import 'package:fcc_advert_mobile_app/src/services/space_service.dart';
 import 'package:fcc_advert_mobile_app/src/utils/Constants.dart';
 import 'package:flutter/material.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/time.dart';
 
 class AdvertisementListPage extends StatefulWidget {
   static String routename = "/list";
+
   @override
   _AdvertisementListPageState createState() => _AdvertisementListPageState();
 }
@@ -35,9 +36,9 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
     limit = 5;
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent&&
+          _scrollController.position.maxScrollExtent &&
           !_isLoading) {
-          fetchAds();
+        fetchAds();
       }
     });
     fetchAds();
@@ -49,23 +50,23 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
     });
     try {
       final response = await spaceService.get(
-        currentPage.toString(),
-        "",
-        ""
-      );// Replace with your API endpoint
+          currentPage.toString(),
+          "",
+          ""
+      ); // Replace with your API endpoint
       print(response["data"]);
       if (response["status"] == 200) {
         print("refresh");
         final List<dynamic> data = response["data"];
-        if(data.length==_allAds.length){
+        if (data.length == _allAds.length) {
           print("here same length");
           setState(() {
             _isLoading = false;
           });
           return;
         }
-        if(currentPage != response["last_page"]){
-          currentPage+=1;
+        if (currentPage != response["last_page"]) {
+          currentPage += 1;
           setState(() {
             _allAds.addAll(data.map((json) {
               return AdData.fromJson(json);
@@ -75,7 +76,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
             }).toList());
             _isLoading = false;
           });
-        }else{
+        } else {
           setState(() {
             _allAds = data.map((json) {
               return AdData.fromJson(json);
@@ -86,8 +87,6 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
             _isLoading = false;
           });
         }
-
-
       } else {
         throw Exception('Failed to load ads');
       }
@@ -115,9 +114,10 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
       _ads = filtered;
     });
   }
+
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
+    return Scaffold(
       appBar: CustomAppBar(
         isProfile: true,
       ),
@@ -125,7 +125,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(top: 18.0,bottom:8.0,left: 8.0,right: 8.0),
+            padding: const EdgeInsets.only(top: 18.0, bottom: 8.0, left: 8.0, right: 8.0),
             child: Row(
               children: [
                 Expanded(
@@ -149,20 +149,63 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                     controller: _scrollController,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
+                      childAspectRatio: 0.75,
                     ),
                     itemCount: _ads.length,
                     itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () async {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AdvertisementDetailPage(ads: _ads[index]),
+                      return Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AdvertisementDetailPage(ads: _ads[index]),
+                                ),
+                              );
+                            },
+                            child: AdvertisementCard(ad: _ads[index]),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 0,
+                            child: PopupMenuButton<int>(
+                              onSelected: (int result) {
+                                switch (result) {
+                                  case 0:
+                                    print("Edit selected for Ad ID: ${_ads[index].id}");
+                                    break;
+                                  case 1:
+                                    print("Delete selected for Ad ID: ${_ads[index].id}");
+                                    break;
+                                }
+                              },
+                              itemBuilder: (BuildContext context) => [
+                                PopupMenuItem<int>(
+                                  value: 0,
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit, size: 20),
+                                      SizedBox(width: 8),
+                                      Text("Edit"),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem<int>(
+                                  value: 1,
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete, size: 20),
+                                      SizedBox(width: 8),
+                                      Text("Delete"),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              icon: Icon(Icons.more_vert, color: Colors.black),
                             ),
-                          );
-                        },
-                        child: AdvertisementCard(ad: _ads[index]),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -179,7 +222,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.iconColor,
-        shape: const CircleBorder(), // 👈 Ensures circle
+        shape: const CircleBorder(),
         onPressed: () {
           Navigator.pushNamed(context, MultiForm.routename).then((_) async {
             await fetchAds();
@@ -191,9 +234,10 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
           color: AppColors.primaryBackground,
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat, );
-
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
   }
+
 }
 
 class AdData {
@@ -238,7 +282,6 @@ class AdData {
   final String? businessAddress;
   final String? businessContact;
   final int? createdUserId;
-
   final CreatedByUser? createdByUser;
 
   AdData({
@@ -287,7 +330,6 @@ class AdData {
   });
 
   factory AdData.fromJson(Map<String, dynamic> json) {
-    print(json);
     return AdData(
       id: json['id'],
       dataCollectionDate: json['data_collection_date'],
@@ -372,7 +414,6 @@ class CreatedByUser {
   }
 }
 
-// Helper to safely parse double
 double? tryParseDouble(dynamic value) {
   if (value == null) return null;
   if (value is double) return value;
@@ -396,75 +437,81 @@ class AdvertisementCard extends StatelessWidget {
         children: [
           Expanded(
             flex: 3,
-            child:Image.network(
+            child: Image.network(
               "https://fccadmin.org/server/storage/${ad.image1}",
               width: double.infinity,
               height: 100,
               fit: BoxFit.fill,
               errorBuilder: (context, error, stackTrace) {
                 print(error);
-                return Image.asset('assets/banner_dummy.png',
+                return Image.asset(
+                  'assets/banner_dummy.png',
                   width: double.infinity,
                   height: 100,
-                  fit: BoxFit.fill,); // Add a placeholder image in assets
+                  fit: BoxFit.fill,
+                );
               },
             ),
           ),
           Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
-                  child: Text(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 8),
+
+                  Text(
                     'Space ID - ${ad.id}',
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     softWrap: false,
                     style: TextStyle(fontFamily: REGULAR),
                   ),
-                ),
-                SizedBox(height: 1,),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
-                  child: Text(
-                    'Space Name - ${ad.landownerName}',
+                  SizedBox(height: 1),
+                  Text(
+                    'Space Category - ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}',
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     softWrap: false,
                     style: TextStyle(fontFamily: REGULAR),
                   ),
-                ),
-
-                SizedBox(height: 1,),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
-                  child: Text(
-                    'Space Catg. - ${FormConstants.getSpaceCategoryNameById(ad.spaceCategoryId) ?? "NA"}',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    softWrap: false,
-                    style: TextStyle(fontFamily: REGULAR),
-                  ),
-                ),
-                SizedBox(height: 1,),
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0,right: 5.0),
-                  child: Text(
+                  SizedBox(height: 1),
+                  Text(
                     'DOC - ${TimeUtils.getTime(ad.dataCollectionDate!) ?? "NA"}',
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     softWrap: false,
                     style: TextStyle(fontFamily: REGULAR),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )
-
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> openMap(double lat, double lng) async {
+    try {
+      final Uri url = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+      );
+      print(">>>>map url $url");
+
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching map: $e');
+      // Optional: show user-friendly feedback
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Could not open Google Maps")),
+      // );
+    }
   }
 }

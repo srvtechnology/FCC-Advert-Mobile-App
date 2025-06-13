@@ -13,8 +13,8 @@ class ApiClient {
   ApiClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: "https://fccadmin.org/server/api", // Set your base URL here
-        connectTimeout: const Duration(seconds: 10), // Set connection timeout
+        baseUrl: "https://staging.fccadmin.org/server/api",
+        connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         headers: {
           "Content-Type": "application/json",

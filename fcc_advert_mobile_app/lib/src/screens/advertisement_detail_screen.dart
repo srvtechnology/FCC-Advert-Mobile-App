@@ -77,9 +77,9 @@ class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
                   // Overlapping Track Button
                   Positioned(
                     top: 0,
-                    right: 16,
+                    right: 12,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(top: 1.0),
                       child: SizedBox(
                         height: 25,
                         width: 120,
@@ -318,11 +318,11 @@ class _AdvertisementDetailPageState extends State<AdvertisementDetailPage> {
   String labelFromIndex(int index) {
     switch (index) {
       case 0:
-        return "Front view";
+        return "Front view...";
       case 1:
-        return "Back view";
+        return "Back view...";
       case 2:
-        return "Whole view";
+        return "Whole view...";
       default:
         return "View ${index + 1}";
     }

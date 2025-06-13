@@ -115,7 +115,7 @@ class _AdvertisementListPageState extends State<AdvertisementListPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Space ID - ${ad["id"]}", style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text("Space Name - ${ad["name"]}"),
+                        //Text("Space Name - ${ad["name"]}"),
                         Text("Space Category - ${ad["address"]}"),
                         Text("Category - ${ad["category"]}"),
                       ],

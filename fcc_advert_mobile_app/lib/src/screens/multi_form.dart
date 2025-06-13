@@ -14,9 +14,15 @@ import "package:fcc_advert_mobile_app/src/layouts/form_layout.dart";
 import "package:fcc_advert_mobile_app/src/services/geo_service.dart";
 import "package:fcc_advert_mobile_app/src/services/space_service.dart";
 import "package:fcc_advert_mobile_app/src/types/form.dart";
+import "package:fcc_advert_mobile_app/src/utils/main_form_provider.dart";
 import "package:fcc_advert_mobile_app/src/utils/time.dart";
 import "package:flutter/material.dart";
 import "package:geolocator/geolocator.dart";
+import "package:place_picker_google/place_picker_google.dart";
+import "package:provider/provider.dart";
+
+import "../services/google_place_picker.dart";
+import "../utils/main_form_provider.dart";
 
 class MultiForm extends StatefulWidget {
   static String routename = "/form";
@@ -34,20 +40,32 @@ class _MultiFormState extends State<MultiForm> {
   Map<String, dynamic> requestBody = {};
   double width = 0;
   double height = 0;
+  double mwidth = 0;
+  double mheight = 0;
   String gps_coordinates = "";
   bool _isLoading = true;
   BoardImages? _boardImages;
   final spaceService = SpaceService();
+  late TextEditingController widthController;
+
+  late TextEditingController heightController;
 
   bool _isSubmit = false;
+  late MainformProvider mainformProvider;
+
   @override
-  void initState(){
+  void initState() {
     super.initState();
     loadFormConstants();
+    widthController = TextEditingController(text: width.toString());
+    heightController = TextEditingController(text: height.toString());
+
+    mainformProvider = Provider.of<MainformProvider>(context, listen: false);
+    mainformProvider.area = "0.0";
   }
 
   Future<void> loadFormConstants() async {
-    if(FormConstants.spaceCategory.isEmpty){
+    if (FormConstants.spaceCategory.isEmpty) {
       await FormConstants.init();
     }
     setState(() {
@@ -58,19 +76,41 @@ class _MultiFormState extends State<MultiForm> {
   List buildPage1Fields(BuildContext context) {
     return [
       CustomTextField(
-        value: requestBody['space_cat_id']!=null?FormConstants.getSpaceCategoryNameById(requestBody["space_cat_id"]):"",
+        value:
+            requestBody['space_cat_id'] != null
+                ? FormConstants.getSpaceCategoryNameById(
+                  requestBody["space_cat_id"],
+                )
+                : "",
         label: "Space category",
         hintText: "Select Category",
         buttonType: "dropdown",
         dropdownData: FormConstants.spaceCategory,
         suffixIconInside: Icons.arrow_drop_down,
-        onSuffixIconTap: (value){
+        onSuffixIconTap: (value) {
           print(value);
           requestBody["space_cat_id"] = value.value;
         },
       ),
+
       CustomTextField(
-        value: requestBody["data_collection_date"]!=null?TimeUtils.getTime(requestBody["data_collection_date"]):"",
+        value: requestBody['agent_rate_name'] != null ? FormConstants.getAgentNameById(requestBody["agent_rate_name"],) : "",
+        label: "Select Agent Rate",
+        hintText: "Select Agent Rate",
+        buttonType: "dropdown",
+        dropdownData: FormConstants.agentNameList,
+        suffixIconInside: Icons.arrow_drop_down,
+        onSuffixIconTap: (value) {
+          print(value);
+          requestBody["agent_rate_name"] = value.value;
+        },
+      ),
+
+      CustomTextField(
+        value:
+            requestBody["data_collection_date"] != null
+                ? TimeUtils.getTime(requestBody["data_collection_date"])
+                : "",
         label: "Data collection date",
         hintText: "Enter Date",
         suffixIconInside: Icons.calendar_today,
@@ -81,92 +121,85 @@ class _MultiFormState extends State<MultiForm> {
         },
       ),
       CustomTextField(
-        value: requestBody["name_of_person_collection_data"]??"",
+        value: requestBody["name_of_person_collection_data"] ?? "",
         label: "Name of person collecting data",
         hintText: "Enter Name",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["name_of_person_collection_data"] = value;
         },
       ),
-      /*CustomTextField(
-        value: requestBody["name_of_advertise_agent_company_or_person"]??"",
-        label: "Name of advertisement company/agent/organisation",
-        hintText: "Enter advertisement company/agent/organisation",
-        onTextChanged: (value){
-          requestBody["name_of_advertise_agent_company_or_person"] = value;
-        },
-      ),*/
       CustomTextField(
-        value: requestBody['name_of_advertise_agent_company_or_person']!=null?FormConstants.getAgentNameById(requestBody["space_cat_id"]):"",
+        value: requestBody['name_of_advertise_agent_company_or_person'] ?? "",
         label: "Name of advertisement company/agent/organisation",
         hintText: "Select Agent",
         buttonType: "dropdown",
         dropdownData: FormConstants.agentList,
         suffixIconInside: Icons.arrow_drop_down,
-        onSuffixIconTap: (value){
+        onSuffixIconTap: (value) {
           print(value);
-          requestBody["name_of_advertise_agent_company_or_person"] = value.name.toString();
+          requestBody["name_of_advertise_agent_company_or_person"] = value.name;
         },
       ),
       CustomTextField(
-        value: requestBody["name_of_contact_person"]??"",
-        label: "Business Name",
-        hintText: "Enter Business Name",
-        onTextChanged: (value){
+        value: requestBody["name_of_contact_person"] ?? "",
+        label: "Name of Contact Person",
+        hintText: "Enter Name of Contact Person",
+        onTextChanged: (value) {
           requestBody["name_of_contact_person"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["telephone"]??"",
+        value: requestBody["telephone"] ?? "",
         label: "Telephone",
         hintText: "Enter Telephone",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["telephone"] = value;
         },
         type: TextFieldTypeEnum.number,
       ),
       CustomTextField(
-        value: requestBody["email"]??"",
+        value: requestBody["email"] ?? "",
         label: "Email",
         hintText: "Enter Email",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["email"] = value;
         },
-        type: TextFieldTypeEnum.email
+        type: TextFieldTypeEnum.email,
       ),
     ];
   }
-  List buildPage2Fields(BuildContext context){
+
+  List buildPage2Fields(BuildContext context) {
     return [
       CustomTextField(
-        value:requestBody["location"]??"",
+        value: requestBody["location"] ?? "",
         label: "Location",
         hintText: "Enter Location",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["location"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["stree_rd_no"]??"",
+        value: requestBody["stree_rd_no"] ?? "",
         label: "Street/Road No",
         hintText: "Enter Street Name",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["stree_rd_no"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["section_of_rd"]??"",
+        value: requestBody["section_of_rd"] ?? "",
         label: "Section of road",
         hintText: "Enter Road Section",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["section_of_rd"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["landmark"]?? "",
+        value: requestBody["landmark"] ?? "",
         label: "Landmark",
         hintText: "Enter landmark",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landmark"] = value;
         },
       ),
@@ -175,50 +208,54 @@ class _MultiFormState extends State<MultiForm> {
         hintText: "Enter Coordinates",
         value: gps_coordinates,
         trailingIconOutside: Icons.location_on_outlined,
-        onTrailingIconTap: (value)async{
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Fetching location...."),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 4),
-            ),
-          );
-          var position = await _getLocation();
-          setState(() {
-            gps_coordinates = "${position["latitude"]} ${position["longitude"]}";
-          });
-          requestBody["gps_cordinate"]="${position["latitude"]} ${position["longitude"]}";
+        onTrailingIconTap: (value) async {
+          openPlacePicker();
         },
       ),
     ];
   }
-  List buildPage3Fields(BuildContext context){
+
+  void openPlacePicker() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GooglePlacePickerExample()),
+    );
+
+    if (result != null && result is LocationResult) {
+      debugPrint("Returned from picker: >>>>${result.latLng}");
+      setState(() {
+        gps_coordinates =
+            "${result.latLng?.latitude} ${result.latLng?.longitude}";
+        requestBody["gps_cordinate"] =
+            "${result.latLng?.latitude} ${result.latLng?.longitude}";
+      });
+    }
+  }
+
+  List buildPage3Fields(BuildContext context) {
     return [
       RadioField(
-        isSelectedType: requestBody["description_property_advertisement"]??"" ,
+        isSelectedType: requestBody["description_property_advertisement"] ?? "",
         key: const ValueKey("desc_property"),
-          propertyTypes: [
-            "Private Property",
-            "Right of way"
-          ],
-          title: "Description of property on which advertisement will be situated",
-        onButtonTap: (value){
-            requestBody["description_property_advertisement"] = value;
+        propertyTypes: ["Private Property", "Right of way"],
+        title:
+            "Description of property on which advertisement will be situated",
+        onButtonTap: (value) {
+          requestBody["description_property_advertisement"] = value;
         },
-
       ),
       CustomTextField(
         key: const ValueKey("cat_desc"),
-        value:  requestBody["advertisement_cat_desc"]??"",
+        value: requestBody["advertisement_cat_desc"] ?? "",
         label: "Advertisement category description",
-          hintText: "Enter Description",
-          onTextChanged: (value){
-            requestBody["advertisement_cat_desc"] = value;
-          },
+        hintText: "Enter Description",
+        onTextChanged: (value) {
+          requestBody["advertisement_cat_desc"] = value;
+        },
       ),
       CustomTextField(
         key: const ValueKey("ad_type"),
-        value: requestBody["type_of_advertisement"]??"",
+        value: requestBody["type_of_advertisement"] ?? "",
         label: "Type of Advertisement",
         hintText: "Select Type of Advertisement",
         suffixIconInside: Icons.arrow_drop_down,
@@ -229,66 +266,85 @@ class _MultiFormState extends State<MultiForm> {
         buttonType: "dropdown",
       ),
       RadioField(
-        isSelectedType: requestBody["position_of_billboard"]??"",
-        propertyTypes: [
-          "Free Standing",
-          "Affixed",
-          "Others"
-        ],
+        isSelectedType: requestBody["position_of_billboard"] ?? "",
+        propertyTypes: ["Free Standing", "Affixed", "Others"],
         title: "Position of billboard",
-        onButtonTap: (value){
+        onButtonTap: (value) {
           requestBody["position_of_billboard"] = value;
         },
       ),
       CustomTextField(
-        // value:width.toString(),
-          label: "Advertisement width",
-          hintText: "Enter Width",
-        type: TextFieldTypeEnum.number ,
-        onTextChanged: (value){
-          print(value);
-          print(width.toString());
+        label: "Advertisement width",
+        hintText: "Enter Width",
+        type: TextFieldTypeEnum.number,
+        value: mwidth % 1 == 0 ? mwidth.toInt().toString() : mwidth.toString(),
+        onTextChanged: (value) {
+          double parsedValue = double.tryParse(value) ?? 0.0;
           setState(() {
-              width = double.parse(value);
+            if(parsedValue!=""){
+              width = parsedValue;
+              mwidth = parsedValue;
+              requestBody["width_advertise"] = width;
               requestBody["area_advertise"] = width * height;
-              requestBody["width_advertise"] = width ;
-            });
-          print(widget.toString());
+              mainformProvider.area="${width * height}";
+            }
+          });
         },
       ),
       CustomTextField(
-        // value: height.toString(),
         label: "Advertisement height",
         hintText: "Enter Height",
-        type: TextFieldTypeEnum.number ,
-        onTextChanged: (value){
-
+        type: TextFieldTypeEnum.number,
+        value:mheight % 1 == 0 ? mheight.toInt().toString() : mheight.toString(),
+        onTextChanged: (value) {
+          double parsedValue = double.tryParse(value) ?? 0.0;
           setState(() {
-            height = double.parse(value);
-            requestBody["area_advertise"] = width * height;
-            requestBody["lenght_advertise"] = height;
-          });
+            if(parsedValue!=""){
+              height = parsedValue;
+              mheight = parsedValue;
+              requestBody["lenght_advertise"] = height;
+              requestBody["area_advertise"] = width * height;
+              mainformProvider.area="${width * height}";
+            }
 
+          });
         },
       ),
       // need to change the logic for onChange here
-      AdvertisementAreaInput(
-          value: (width * height).toStringAsFixed(2),
-          onChange: (value){
-            print("Area ${value}");
-            requestBody["area_advertise"] = value;
-          },
-          onAutoDetect: (){
+      Consumer<MainformProvider>(
+        builder: (context, value, child) {
+          return AdvertisementAreaInput(
+            value: value.area,
+            onChange: (value, w, h) {
+              print("Area $value");
 
-          }),
+              double? parsedW = double.tryParse(w);
+              double? parsedH = double.tryParse(h);
+
+              if (parsedW != null && parsedH != null) {
+                requestBody["area_advertise"] = value;
+                requestBody["lenght_advertise"]=h;
+                requestBody["width_advertise"]=w;
+                setState(() {
+                  mwidth = parsedW;
+                  mheight = parsedH;
+                });
+              } else {
+                print("❌ Invalid width or height input: w=$w, h=$h");
+              }
+            },
+            onAutoDetect: () {},
+          );
+        },
+      ),
       CustomTextField(
         key: const ValueKey("no_ad_slides"),
-        value: requestBody["no_advertisement_sides"]?? "",
+        value: requestBody["no_advertisement_sides"] ?? "",
         label: "Number of advertisement slides",
         hintText: "Enter Number",
         dropdownData: FormConstants.advertisementNumbers,
         suffixIconInside: Icons.arrow_drop_down,
-        onSuffixIconTap: (value){
+        onSuffixIconTap: (value) {
           requestBody["no_advertisement_sides"] = value.value;
         },
         buttonType: "dropdown",
@@ -297,85 +353,82 @@ class _MultiFormState extends State<MultiForm> {
         key: const ValueKey("clearance_height"),
         label: "Clearance Height",
         hintText: "Enter Clearance Height",
-        value:  requestBody["clearance_height_advertise"]??"",
-        onTextChanged: (value){
+        value: requestBody["clearance_height_advertise"] ?? "",
+        onTextChanged: (value) {
           requestBody["clearance_height_advertise"] = value;
         },
       ),
     ];
   }
-  List buildPage4Fields(BuildContext context){
-    return[
+
+  List buildPage4Fields(BuildContext context) {
+    return [
       CustomTextField(
-        value: requestBody["landowner_company_corporate"]?? "",
+        value: requestBody["landowner_company_corporate"] ?? "",
         label: "Landowner Company/Corporate",
         hintText: "Enter Landowner Company/Corporate",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landowner_company_corporate"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["landowner_name"]??"",
+        value: requestBody["landowner_name"] ?? "",
         label: "Landowner Name",
         hintText: "Enter owner name",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landowner_name"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["landlord_street_address"]??"",
+        value: requestBody["landlord_street_address"] ?? "",
         label: "Landowner Street Address",
         hintText: "Enter Street Address",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landlord_street_address"] = value;
         },
       ),
       CustomTextField(
-        value: requestBody["landlord_telephone"]??"",
+        value: requestBody["landlord_telephone"] ?? "",
         label: "Landowner Telephone",
         hintText: "Enter Telephone",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landlord_telephone"] = value;
         },
         type: TextFieldTypeEnum.number,
       ),
       CustomTextField(
-        value: requestBody["landlord_email"]??"",
+        value: requestBody["landlord_email"] ?? "",
         label: "Landowner Email",
         hintText: "Enter Email",
-        onTextChanged: (value){
+        onTextChanged: (value) {
           requestBody["landlord_email"] = value;
         },
-        type: TextFieldTypeEnum.email
+        type: TextFieldTypeEnum.email,
       ),
-      AdvertisementBoardImages(onImagesChanged: (images){
-        _boardImages = images;
-      })
-
+      AdvertisementBoardImages(
+        onImagesChanged: (images) {
+          _boardImages = images;
+        },
+      ),
     ];
   }
-
 
   _getLocation() async {
     try {
       Position position = await getCurrentLocation();
-      return {
-        "latitude": position.latitude,
-        "longitude": position.longitude
-      };
-
+      return {"latitude": position.latitude, "longitude": position.longitude};
     } catch (e) {
       print('Error: $e');
     }
   }
 
-  List<Widget> buildFormPages(BuildContext context){
+  List<Widget> buildFormPages(BuildContext context) {
     return [
       FormLayout(
         title: "Step-1 Basic information",
         child: ListView.builder(
           itemCount: buildPage1Fields(context).length,
-          itemBuilder: (BuildContext context, int index){
+          itemBuilder: (BuildContext context, int index) {
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
               child: buildPage1Fields(context)[index],
@@ -387,7 +440,7 @@ class _MultiFormState extends State<MultiForm> {
         title: "Step-2 Advertisement identification ",
         child: ListView.builder(
           itemCount: buildPage2Fields(context).length,
-          itemBuilder: (BuildContext context, int index){
+          itemBuilder: (BuildContext context, int index) {
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
               child: buildPage2Fields(context)[index],
@@ -399,7 +452,7 @@ class _MultiFormState extends State<MultiForm> {
         title: "Step-3 Advertisement details ",
         child: ListView.builder(
           itemCount: buildPage3Fields(context).length,
-          itemBuilder: (BuildContext context, int index){
+          itemBuilder: (BuildContext context, int index) {
             return Padding(
               padding: EdgeInsets.symmetric(vertical: 10),
               child: buildPage3Fields(context)[index],
@@ -451,43 +504,53 @@ class _MultiFormState extends State<MultiForm> {
   }
 
   Future<void> uploadImages(int spaceId) async {
-
     print("here1");
     final formData = FormData();
 
     formData.fields.add(MapEntry('id', spaceId.toString()));
     print("here12");
     if (_boardImages!.front != null) {
-      formData.files.add(MapEntry(
-        'image_1',
-        await MultipartFile.fromFile(_boardImages!.front!.path,
-            filename: _boardImages!.front!.name),
-      ));
+      formData.files.add(
+        MapEntry(
+          'image_1',
+          await MultipartFile.fromFile(
+            _boardImages!.front!.path,
+            filename: _boardImages!.front!.name,
+          ),
+        ),
+      );
     }
     print("here1");
     if (_boardImages!.back != null) {
-      formData.files.add(MapEntry(
-        'image_2',
-        await MultipartFile.fromFile(_boardImages!.back!.path,
-            filename: _boardImages!.back!.name),
-      ));
+      formData.files.add(
+        MapEntry(
+          'image_2',
+          await MultipartFile.fromFile(
+            _boardImages!.back!.path,
+            filename: _boardImages!.back!.name,
+          ),
+        ),
+      );
     }
     print("here2");
     if (_boardImages!.whole != null) {
-      formData.files.add(MapEntry(
-        'image_3',
-        await MultipartFile.fromFile(_boardImages!.whole!.path,
-            filename: _boardImages!.whole!.name),
-      ));
+      formData.files.add(
+        MapEntry(
+          'image_3',
+          await MultipartFile.fromFile(
+            _boardImages!.whole!.path,
+            filename: _boardImages!.whole!.name,
+          ),
+        ),
+      );
     }
+
     print(formData);
     try {
       final response = await apiClient.post(
         '/spacesUpadte',
         data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
+        options: Options(contentType: 'multipart/form-data'),
       );
 
       if (response.statusCode == 200) {
@@ -500,9 +563,7 @@ class _MultiFormState extends State<MultiForm> {
     }
   }
 
-
-
-  void _submit() async{
+  void _submit() async {
     // for (var step in form) {
     //   final key = step['key']!;
     //   formData[key] = _controllers[key]?.text ?? '';
@@ -514,10 +575,10 @@ class _MultiFormState extends State<MultiForm> {
         duration: Duration(seconds: 3),
       ),
     );
-    try{
+    try {
       var response = await spaceService.createSpace(requestBody);
-      if(response["data"]["id"]!=null){
-        if(_boardImages==null ) {
+      if (response["data"]["id"] != null) {
+        if (_boardImages == null) {
           print("here");
           Navigator.pop(context);
           return;
@@ -533,20 +594,22 @@ class _MultiFormState extends State<MultiForm> {
       );
       Navigator.pop(context);
       return;
-    }catch(err){
+    } catch (err) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error while uploading, check if fields are empty or not"),
+          content: Text(
+            "Error while uploading, check if fields are empty or not",
+          ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 2),
         ),
       );
     }
     setState(() {
-      _isSubmit=false;
+      _isSubmit = false;
     });
-
   }
+
   Map<String, dynamic> formData = {
     'name': '',
     'email': '',
@@ -554,63 +617,95 @@ class _MultiFormState extends State<MultiForm> {
     'address': '',
   };
 
-
   @override
   Widget build(BuildContext context) {
+    final formPages = buildFormPages(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
 
       backgroundColor: AppColors.primaryBackground,
       appBar: CustomAppBar(),
-      body: _isLoading?Center(child: CircularProgressIndicator(),):
-      LayoutBuilder(builder: (context, constraints){
-        return Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                physics: NeverScrollableScrollPhysics(), // Disable swipe
-                itemCount: buildFormPages(context).length,
-                itemBuilder: (context, index) {
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          physics:
+                              NeverScrollableScrollPhysics(), // Disable swipe
+                          itemCount: formPages.length,
+                          itemBuilder: (context, index) {
+                            return formPages[index];
+                          },
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        color: AppColors.primaryBackground,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
-                  return buildFormPages(context)[index];
+                          children: [
+                            if (_currentPage > 0)
+                              Flexible(
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(horizontal: 10),
+                                  child: customButton(
+                                    onPressed: _goPrevious,
+                                    text: "Previous",
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                                    0.4 <
+                                                200
+                                            ? 200 // Minimum width of 200px for smaller screens
+                                            : MediaQuery.of(
+                                                  context,
+                                                ).size.width *
+                                                0.4,
+                                  ),
+                                ),
+                              ),
+                            if (_currentPage < totalPages - 1)
+                              Flexible(
+                                child: customButton(
+                                  onPressed: _goNext,
+                                  text: "Next",
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4 <
+                                              200
+                                          ? 200 // Minimum width of 200px for smaller screens
+                                          : MediaQuery.of(context).size.width *
+                                              0.4,
+                                ),
+                              ),
+                            if (_currentPage == totalPages - 1)
+                              Flexible(
+                                child: customButton(
+                                  onPressed: _submit,
+                                  text: "Submit",
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
                 },
               ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              color: AppColors.primaryBackground,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
-                children: [
-                  if (_currentPage > 0)
-                    Flexible(child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 10),
-                      child: customButton(
-                        onPressed: _goPrevious,
-                        text: "Previous",
-                        width: MediaQuery.of(context).size.width * 0.4 < 200
-                            ? 200 // Minimum width of 200px for smaller screens
-                            : MediaQuery.of(context).size.width * 0.4,
-                      ),
-                    )
-                    ),
-                  if (_currentPage < totalPages - 1)
-                    Flexible(
-                        child: customButton(
-                          onPressed: _goNext, text: "Next",width: MediaQuery.of(context).size.width * 0.4 < 200
-                            ? 200 // Minimum width of 200px for smaller screens
-                            : MediaQuery.of(context).size.width * 0.4,
-                        )),
-                  if (_currentPage == totalPages - 1)
-                    Flexible(child: customButton(onPressed: _submit, text: "Submit")),
-                ],
-              ),
-            )
-          ],
-        );
-      }),
     );
+  }
+
+  @override
+  void dispose() {
+    widthController.dispose();
+    heightController.dispose();
+    super.dispose();
   }
 }
